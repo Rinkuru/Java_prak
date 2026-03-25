@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="java-prak" default="help" basedir=".">
+
+    <!-- ===================== НАСТРОЙКИ ПОДКЛЮЧЕНИЯ ===================== -->
+    <property name="db.driver"   value="org.postgresql.Driver"/>
+    <property name="db.url"      value="jdbc:postgresql://localhost:5432/hr_agency"/>
+    <property name="db.user"     value="postgres"/>
+    <property name="db.password" value="postgres"/>
+    <property name="docker.compose.file" value="${basedir}/psql/docker-compose.yml"/>
+
+    <!-- Путь к JDBC-драйверу PostgreSQL -->
+    <path id="classpath.db">
+        <fileset dir="lib">
+            <include name="postgresql-*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- ===================== СПРАВКА ===================== -->
+    <target name="help" description="Список доступных задач">
+        <echo>Доступные задачи:</echo>
+        <echo>  ant docker-up           — запустить PostgreSQL в Docker Compose</echo>
+        <echo>  ant docker-stop         — остановить контейнер PostgreSQL без удаления</echo>
+        <echo>  ant docker-down         — остановить и удалить контейнеры Docker Compose</echo>
+        <echo>  ant docker-down-volumes — остановить и удалить контейнеры Docker Compose</echo>
+        <echo>  ant docker-logs         — показать логи PostgreSQL-контейнера</echo>
+        <echo>  ant docker-check        — проверить, что контейнер запущен и PostgreSQL healthy</echo>
+        <echo>  ant docker-db-init      — поднять Docker + дождаться PostgreSQL + создать БД и таблицы + заполнить</echo>
+        <echo>  ant docker-db-reset     — поднять Docker + дождаться PostgreSQL + пересоздать БД с нуля</echo>
+        <echo>  ant db-create-database  — создать базу данных hr_agency</echo>
+        <echo>  ant db-create           — создать таблицы</echo>
+        <echo>  ant db-fill             — заполнить таблицы тестовыми данными и создать индексы</echo>
+        <echo>  ant db-init             — создать БД + таблицы + заполнить</echo>
+        <echo>  ant db-show             — поднять Docker, подготовить БД и вывести содержимое всех таблиц</echo>
+        <echo>  ant db-clean            — очистить все таблицы (данные удаляются, таблицы остаются)</echo>
+        <echo>  ant db-drop             — удалить базу данных полностью</echo>
+        <echo>  ant db-reset            — drop + init</echo>
+    </target>
+
+    <!-- ===================== DOCKER COMPOSE ===================== -->
+    <target name="docker-up" description="Запустить PostgreSQL в Docker Compose">
+        <echo>Запуск PostgreSQL через Docker Compose...</echo>
+        <exec executable="sg"
+              failonerror="true">
+            <arg value="docker"/>
+            <arg value="-c"/>
+            <arg value="docker compose -f '${docker.compose.file}' up -d"/>
+        </exec>
+    </target>
+
+    <target name="docker-stop" description="Остановить контейнеры Docker Compose без удаления">
+        <echo>Остановка контейнеров Docker Compose...</echo>
+        <exec executable="sg"
+              failonerror="true">
+            <arg value="docker"/>
+            <arg value="-c"/>
+            <arg value="docker compose -f '${docker.compose.file}' stop"/>
+        </exec>
+    </target>
+
+    <target name="docker-down" description="Остановить и удалить контейнеры Docker Compose">
+        <echo>Остановка и удаление контейнеров Docker Compose...</echo>
+        <exec executable="sg"
+              failonerror="true">
+            <arg value="docker"/>
+            <arg value="-c"/>
+            <arg value="docker compose -f '${docker.compose.file}' down"/>
+        </exec>
+    </target>
+
+    <target name="docker-down-volumes" description="Остановить, удалить контейнеры и volumes">
+        <echo>Остановка и удаление контейнеров Docker Compose и удаление volumes...</echo>
+        <exec executable="sg" failonerror="true">
+            <arg value="docker"/>
+            <arg value="-c"/>
+            <arg value="docker compose -f '${docker.compose.file}' down -v"/>
+        </exec>
+    </target>
+
+    <target name="docker-logs" description="Показать логи PostgreSQL-контейнера">
+        <exec executable="sg"
+              failonerror="true">
+            <arg value="docker"/>
+            <arg value="-c"/>
+            <arg value="docker compose -f '${docker.compose.file}' logs postgres"/>
+        </exec>
+    </target>
+
+    <target name="docker-check" description="Проверить, что контейнер запущен и PostgreSQL healthy">
+        <echo>Проверка состояния контейнера PostgreSQL...</echo>
+        <exec executable="bash"
+              failonerror="true">
+            <arg value="-lc"/>
+            <arg value="if ! sg docker -c &quot;docker inspect postgres_container&quot; >/dev/null 2>&amp;1; then echo &quot;Container postgres_container is not created&quot; >&amp;2; exit 1; fi; for i in $(seq 1 30); do status=$(sg docker -c &quot;docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' postgres_container&quot; 2>/dev/null || true); if [ &quot;$status&quot; = &quot;healthy&quot; ]; then exit 0; fi; sleep 2; done; echo &quot;PostgreSQL container exists but is not healthy&quot; >&amp;2; exit 1"/>
+        </exec>
+        <echo>PostgreSQL доступен.</echo>
+    </target>
+
+    <!-- ===================== СОЗДАНИЕ БАЗЫ ДАННЫХ ===================== -->
+    <target name="db-create-database" description="Создать базу данных hr_agency">
+        <echo>Создание базы данных hr_agency...</echo>
+        <sql driver="${db.driver}"
+             url="jdbc:postgresql://localhost:5432/postgres"
+             userid="${db.user}"
+             password="${db.password}"
+             autocommit="true"
+             onerror="continue">
+            <classpath refid="classpath.db"/>
+            <transaction>
+                CREATE DATABASE hr_agency
+                    ENCODING 'UTF8'
+                    TEMPLATE template0;
+            </transaction>
+        </sql>
+        <echo>База данных создана или уже существует.</echo>
+    </target>
+
+    <target name="docker-db-create-database"
+            depends="docker-up,docker-check"
+            description="Создать базу данных hr_agency в Docker, если она отсутствует">
+        <echo>Проверка наличия базы данных hr_agency в контейнере PostgreSQL...</echo>
+        <exec executable="bash"
+              failonerror="true">
+            <arg value="-lc"/>
+            <arg value="if sg docker -c &quot;docker exec postgres_container psql -U ${db.user} -d postgres -tAc \&quot;SELECT 1 FROM pg_database WHERE datname='hr_agency'\&quot;&quot; | grep -q 1; then echo &quot;База данных hr_agency уже существует.&quot;; else sg docker -c &quot;docker exec postgres_container psql -U ${db.user} -d postgres -c \&quot;CREATE DATABASE hr_agency ENCODING 'UTF8' TEMPLATE template0\&quot;&quot;; fi"/>
+        </exec>
+    </target>
+
+    <!-- ===================== СОЗДАНИЕ ТАБЛИЦ ===================== -->
+    <target name="db-create" description="Создать таблицы и индексы">
+        <echo>Создание таблиц...</echo>
+        <sql driver="${db.driver}"
+             url="${db.url}"
+             userid="${db.user}"
+             password="${db.password}"
+             src="psql/create.sql"
+             encoding="UTF-8"
+             onerror="abort">
+            <classpath refid="classpath.db"/>
+        </sql>
+        <echo>Таблицы созданы.</echo>
+    </target>
+
+    <!-- ===================== ЗАПОЛНЕНИЕ ДАННЫМИ ===================== -->
+    <target name="db-fill" description="Заполнить таблицы тестовыми данными">
+        <echo>Заполнение таблиц...</echo>
+        <sql driver="${db.driver}"
+             url="${db.url}"
+             userid="${db.user}"
+             password="${db.password}"
+             src="psql/fill.sql"
+             encoding="UTF-8"
+             onerror="abort">
+            <classpath refid="classpath.db"/>
+        </sql>
+        <echo>Данные добавлены.</echo>
+    </target>
+
+    <!-- ===================== ИНИЦИАЛИЗАЦИЯ (create-database + create + fill) ===================== -->
+    <target name="db-init" depends="db-create-database,db-create,db-fill"
+            description="Создать БД, таблицы и заполнить данными">
+        <echo>База данных инициализирована.</echo>
+    </target>
+
+    <!-- ===================== ВЫВОД СОДЕРЖИМОГО ===================== -->
+    <target name="db-show" description="Поднять Docker, подготовить БД и вывести содержимое всех таблиц">
+        <echo>Содержимое таблиц:</echo>
+        <sql driver="${db.driver}"
+             url="${db.url}"
+             userid="${db.user}"
+             password="${db.password}"
+             print="true"
+             showheaders="true"
+             encoding="UTF-8">
+            <classpath refid="classpath.db"/>
+            <transaction>
+                SELECT '== КОМПАНИИ ==' AS info;
+                SELECT id, name, description FROM company ORDER BY id;
+
+                SELECT '== ВАКАНСИИ ==' AS info;
+                SELECT v.id, c.name AS company, v.position, v.salary,
+                       v.required_education, v.requirements, v.status
+                FROM vacancy v
+                JOIN company c ON c.id = v.company_id
+                ORDER BY v.company_id, v.id;
+
+                SELECT '== ЛЮДИ ==' AS info;
+                SELECT id, full_name, education, status, desired_position, desired_salary
+                FROM person
+                ORDER BY id;
+
+                SELECT '== ИСТОРИЯ РАБОТЫ ==' AS info;
+                SELECT we.id, p.full_name, c.name AS company, we.position, we.salary,
+                       we.start_date, we.end_date
+                FROM work_experience we
+                JOIN person p ON p.id = we.person_id
+                JOIN company c ON c.id = we.company_id
+                ORDER BY p.id, we.start_date;
+            </transaction>
+        </sql>
+    </target>
+
+    <!-- ===================== ОЧИСТКА ДАННЫХ ===================== -->
+    <target name="db-clean" description="Удалить все данные (таблицы остаются)">
+        <echo>Очистка данных...</echo>
+        <sql driver="${db.driver}"
+             url="${db.url}"
+             userid="${db.user}"
+             password="${db.password}"
+             encoding="UTF-8">
+            <classpath refid="classpath.db"/>
+            <transaction>
+                TRUNCATE work_experience, vacancy, person, company RESTART IDENTITY CASCADE;
+            </transaction>
+        </sql>
+        <echo>Данные удалены, таблицы остались.</echo>
+    </target>
+
+    <!-- ===================== УДАЛЕНИЕ БАЗЫ ДАННЫХ ===================== -->
+    <target name="db-drop" description="Удалить базу данных hr_agency полностью">
+        <echo>Удаление базы данных...</echo>
+        <sql driver="${db.driver}"
+             url="jdbc:postgresql://localhost:5432/postgres"
+             userid="${db.user}"
+             password="${db.password}"
+             autocommit="true"
+             onerror="continue">
+            <classpath refid="classpath.db"/>
+            <transaction>
+                DROP DATABASE IF EXISTS hr_agency;
+            </transaction>
+        </sql>
+        <echo>База данных удалена.</echo>
+    </target>
+
+    <!-- ===================== ПОЛНЫЙ СБРОС И ПЕРЕСОЗДАНИЕ ===================== -->
+    <target name="db-reset" depends="db-drop,db-init"
+            description="Удалить всё и пересоздать с нуля">
+        <echo>База данных пересоздана.</echo>
+    </target>
+
+    <target name="docker-db-init" depends="docker-db-create-database,db-create,db-fill"
+            description="Поднять PostgreSQL в Docker и инициализировать базу">
+        <echo>Docker PostgreSQL запущен и база инициализирована.</echo>
+    </target>
+
+    <target name="docker-db-reset" depends="docker-down,docker-up,docker-check,db-reset"
+            description="Поднять PostgreSQL в Docker и пересоздать базу">
+        <echo>Docker PostgreSQL запущен и база пересоздана.</echo>
+    </target>
+
+</project>
