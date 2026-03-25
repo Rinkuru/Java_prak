@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="java-prak" default="help" basedir=".">
 
-    <!-- ===================== НАСТРОЙКИ ПОДКЛЮЧЕНИЯ ===================== -->
     <property name="db.driver"   value="org.postgresql.Driver"/>
     <property name="db.url"      value="jdbc:postgresql://localhost:5432/hr_agency"/>
     <property name="db.user"     value="postgres"/>
@@ -15,7 +14,6 @@
         </fileset>
     </path>
 
-    <!-- ===================== СПРАВКА ===================== -->
     <target name="help" description="Список доступных задач">
         <echo>Доступные задачи:</echo>
         <echo>  ant docker-up           — запустить PostgreSQL в Docker Compose</echo>
@@ -125,7 +123,6 @@
         </exec>
     </target>
 
-    <!-- ===================== СОЗДАНИЕ ТАБЛИЦ ===================== -->
     <target name="db-create" description="Создать таблицы и индексы">
         <echo>Создание таблиц...</echo>
         <sql driver="${db.driver}"
@@ -140,7 +137,6 @@
         <echo>Таблицы созданы.</echo>
     </target>
 
-    <!-- ===================== ЗАПОЛНЕНИЕ ДАННЫМИ ===================== -->
     <target name="db-fill" description="Заполнить таблицы тестовыми данными">
         <echo>Заполнение таблиц...</echo>
         <sql driver="${db.driver}"
@@ -155,13 +151,11 @@
         <echo>Данные добавлены.</echo>
     </target>
 
-    <!-- ===================== ИНИЦИАЛИЗАЦИЯ (create-database + create + fill) ===================== -->
     <target name="db-init" depends="db-create-database,db-create,db-fill"
             description="Создать БД, таблицы и заполнить данными">
         <echo>База данных инициализирована.</echo>
     </target>
 
-    <!-- ===================== ВЫВОД СОДЕРЖИМОГО ===================== -->
     <target name="db-show" description="Поднять Docker, подготовить БД и вывести содержимое всех таблиц">
         <echo>Содержимое таблиц:</echo>
         <sql driver="${db.driver}"
@@ -199,7 +193,6 @@
         </sql>
     </target>
 
-    <!-- ===================== ОЧИСТКА ДАННЫХ ===================== -->
     <target name="db-clean" description="Удалить все данные (таблицы остаются)">
         <echo>Очистка данных...</echo>
         <sql driver="${db.driver}"
@@ -215,7 +208,6 @@
         <echo>Данные удалены, таблицы остались.</echo>
     </target>
 
-    <!-- ===================== УДАЛЕНИЕ БАЗЫ ДАННЫХ ===================== -->
     <target name="db-drop" description="Удалить базу данных hr_agency полностью">
         <echo>Удаление базы данных...</echo>
         <sql driver="${db.driver}"
