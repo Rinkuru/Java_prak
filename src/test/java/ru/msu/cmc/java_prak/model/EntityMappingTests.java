@@ -1,24 +1,25 @@
 package ru.msu.cmc.java_prak.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 @DataJpaTest
-class EntityMappingTests {
+public class EntityMappingTests extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Test
-    void shouldPersistCompanyWithVacancy() {
+    public void shouldPersistCompanyWithVacancy() {
         Company company = new Company();
         company.setName("ВКонтакте");
         company.setDescription("Крупная IT-компания");
@@ -45,14 +46,14 @@ class EntityMappingTests {
                 .getSingleResult();
 
         assertNotNull(savedVacancy.getId());
-        assertEquals("Backend-разработчик", savedVacancy.getPosition());
-        assertEquals(new BigDecimal("240000.00"), savedVacancy.getSalary());
-        assertEquals("ВКонтакте", savedVacancy.getCompany().getName());
+        assertEquals(savedVacancy.getPosition(), "Backend-разработчик");
+        assertEquals(savedVacancy.getSalary(), new BigDecimal("240000.00"));
+        assertEquals(savedVacancy.getCompany().getName(), "ВКонтакте");
         assertTrue(savedVacancy.isStatus());
     }
 
     @Test
-    void shouldPersistPersonWithOrderedWorkExperience() {
+    public void shouldPersistPersonWithOrderedWorkExperience() {
         Company company = new Company();
         company.setName("1С");
         company.setDescription("Разработчик программного обеспечения");
@@ -102,10 +103,10 @@ class EntityMappingTests {
                 .getSingleResult();
 
         assertNotNull(savedPerson.getId());
-        assertEquals(2, savedPerson.getWorkExperiences().size());
-        assertEquals("Backend-разработчик", savedPerson.getWorkExperiences().get(0).getPosition());
-        assertEquals(LocalDate.of(2021, 4, 1), savedPerson.getWorkExperiences().get(0).getStartDate());
-        assertEquals(LocalDate.of(2018, 7, 1), savedPerson.getWorkExperiences().get(1).getStartDate());
-        assertEquals("1С", savedPerson.getWorkExperiences().get(0).getCompany().getName());
+        assertEquals(savedPerson.getWorkExperiences().size(), 2);
+        assertEquals(savedPerson.getWorkExperiences().get(0).getPosition(), "Backend-разработчик");
+        assertEquals(savedPerson.getWorkExperiences().get(0).getStartDate(), LocalDate.of(2021, 4, 1));
+        assertEquals(savedPerson.getWorkExperiences().get(1).getStartDate(), LocalDate.of(2018, 7, 1));
+        assertEquals(savedPerson.getWorkExperiences().get(0).getCompany().getName(), "1С");
     }
 }

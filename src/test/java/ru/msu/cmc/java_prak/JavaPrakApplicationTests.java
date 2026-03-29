@@ -1,13 +1,13 @@
 package ru.msu.cmc.java_prak;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
 @SpringBootTest
-class JavaPrakApplicationTests {
+public class JavaPrakApplicationTests extends AbstractTestNGSpringContextTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    public void contextLoads() {
+    }
 }
