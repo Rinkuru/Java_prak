@@ -6,6 +6,9 @@
     <property name="db.user"     value="postgres"/>
     <property name="db.password" value="postgres"/>
     <property name="docker.compose.file" value="${basedir}/psql/docker-compose.yml"/>
+    <property name="project.root" value="${basedir}/.."/>
+    <property name="gradle.wrapper" value="${project.root}/gradlew"/>
+    <property name="gradle.user.home" value="${project.root}/.gradle-ant"/>
 
     <!-- Путь к JDBC-драйверу PostgreSQL -->
     <path id="classpath.db">
@@ -32,6 +35,58 @@
         <echo>  ant db-clean            — очистить все таблицы (данные удаляются, таблицы остаются)</echo>
         <echo>  ant db-drop             — удалить базу данных полностью</echo>
         <echo>  ant db-reset            — drop + init</echo>
+        <echo>  ant app-clean           — очистить артефакты сборки Gradle</echo>
+        <echo>  ant app-build           — собрать основной код проекта</echo>
+        <echo>  ant app-test-build      — собрать тестовый код проекта</echo>
+        <echo>  ant app-test            — выполнить все тесты проекта</echo>
+        <echo>  ant app-check           — последовательно собрать проект и запустить тесты</echo>
+    </target>
+
+    <!-- ===================== СБОРКА ПРИЛОЖЕНИЯ ===================== -->
+    <target name="app-clean" description="Очистить артефакты сборки проекта">
+        <echo>Очистка сборки Gradle...</echo>
+        <exec executable="${gradle.wrapper}"
+              dir="${project.root}"
+              failonerror="true">
+            <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="clean"/>
+        </exec>
+    </target>
+
+    <target name="app-build" description="Собрать основной код проекта">
+        <echo>Сборка main-кода через Gradle...</echo>
+        <exec executable="${gradle.wrapper}"
+              dir="${project.root}"
+              failonerror="true">
+            <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="classes"/>
+        </exec>
+    </target>
+
+    <target name="app-test-build" description="Собрать тестовый код проекта">
+        <echo>Сборка test-кода через Gradle...</echo>
+        <exec executable="${gradle.wrapper}"
+              dir="${project.root}"
+              failonerror="true">
+            <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="testClasses"/>
+        </exec>
+    </target>
+
+    <target name="app-test" description="Запустить тесты проекта">
+        <echo>Запуск тестов через Gradle...</echo>
+        <exec executable="${gradle.wrapper}"
+              dir="${project.root}"
+              failonerror="true">
+            <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="test"/>
+        </exec>
+    </target>
+
+    <target name="app-check"
+            depends="app-build,app-test-build,app-test"
+            description="Собрать приложение и выполнить тесты">
+        <echo>Проверка проекта завершена успешно.</echo>
     </target>
 
     <!-- ===================== DOCKER COMPOSE ===================== -->
