@@ -68,6 +68,21 @@ echo location of your Java installation. 1>&2
 goto fail
 
 :execute
+for /f "tokens=3 delims= " %%v in ('"%JAVA_EXE%" -version 2^>^&1 ^| findstr /i "version"') do set JAVA_VERSION_RAW=%%~v
+set JAVA_VERSION_RAW=%JAVA_VERSION_RAW:"=%
+for /f "tokens=1 delims=." %%m in ("%JAVA_VERSION_RAW%") do set JAVA_MAJOR=%%m
+if "%JAVA_MAJOR%"=="1" for /f "tokens=2 delims=." %%m in ("%JAVA_VERSION_RAW%") do set JAVA_MAJOR=%%m
+if not defined JAVA_MAJOR goto javaVersionReady
+if %JAVA_MAJOR% LSS 17 (
+  echo. 1>&2
+  echo ERROR: This project requires Java 17 or newer to run Gradle. 1>&2
+  echo Detected Java version: %JAVA_VERSION_RAW% 1>&2
+  echo. 1>&2
+  echo Set JAVA_HOME to a JDK 17 installation and run gradlew again. 1>&2
+  goto fail
+)
+
+:javaVersionReady
 @rem Setup the command line
 
 
