@@ -3,6 +3,7 @@ package ru.msu.cmc.java_prak.dao;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
@@ -133,6 +134,29 @@ public class DaoEdgeCaseTests extends AbstractTestNGSpringContextTests {
         assertEquals(companyDao.searchCompanies("   ", false).size(), 2);
 
         assertEquals(companyDao.findCardById(secondCompany.getId()).orElseThrow().getVacancies().size(), 0);
+    }
+
+    @Test(expectedExceptions = ConstraintViolationException.class)
+    public void companyDaoShouldFailToDeleteCompanyReferencedByWorkExperience() {
+        Company company = persistCompany("ВКонтакте", "IT-компания");
+        Person person = persistPerson(
+                "Иванов Алексей Дмитриевич",
+                "Высшее техническое",
+                true,
+                "Backend-разработчик",
+                "230000.00"
+        );
+        entityManager.persist(buildWorkExperience(
+                person,
+                company,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2021, 1, 1),
+                null
+        ));
+        flushAndClear();
+
+        companyDao.deleteById(company.getId());
     }
 
     @Test
@@ -315,6 +339,84 @@ public class DaoEdgeCaseTests extends AbstractTestNGSpringContextTests {
         assertEquals(descendingPeople.size(), 4);
         assertEquals(descendingPeople.get(0).getId(), technicalPerson.getId());
         assertEquals(descendingPeople.get(1).getId(), notLookingPerson.getId());
+    }
+
+    @Test
+    public void matchingDaoShouldIgnoreBlankPersonEducationWhenSearchingVacancies() {
+        Company company = persistCompany("ВКонтакте", "IT-компания");
+
+        Vacancy technicalVacancy = persistVacancy(
+                company,
+                "Backend-разработчик",
+                "210000.00",
+                "Высшее техническое",
+                true
+        );
+        Vacancy medicalVacancy = persistVacancy(
+                company,
+                "Backend-разработчик",
+                "220000.00",
+                "Высшее медицинское",
+                true
+        );
+        Vacancy noEducationVacancy = persistVacancy(
+                company,
+                "Backend-разработчик",
+                "230000.00",
+                null,
+                true
+        );
+        Vacancy closedVacancy = persistVacancy(
+                company,
+                "Backend-разработчик",
+                "240000.00",
+                "Среднее специальное",
+                false
+        );
+        persistVacancy(
+                company,
+                "Тестировщик",
+                "260000.00",
+                "Высшее техническое",
+                true
+        );
+        persistVacancy(
+                company,
+                "Backend-разработчик",
+                "190000.00",
+                "Высшее техническое",
+                true
+        );
+
+        Person personWithBlankEducation = persistPerson(
+                "Кандидат без указанного образования",
+                "   ",
+                true,
+                "Backend-разработчик",
+                "200000.00"
+        );
+        flushAndClear();
+
+        List<Vacancy> activeVacancies = matchingDao.findSuitableVacanciesForPerson(
+                personWithBlankEducation.getId(),
+                true,
+                true
+        );
+        assertEquals(activeVacancies.size(), 3);
+        assertEquals(activeVacancies.get(0).getId(), technicalVacancy.getId());
+        assertEquals(activeVacancies.get(1).getId(), medicalVacancy.getId());
+        assertEquals(activeVacancies.get(2).getId(), noEducationVacancy.getId());
+
+        List<Vacancy> allMatchingVacancies = matchingDao.findSuitableVacanciesForPerson(
+                personWithBlankEducation.getId(),
+                false,
+                false
+        );
+        assertEquals(allMatchingVacancies.size(), 4);
+        assertEquals(allMatchingVacancies.get(0).getId(), closedVacancy.getId());
+        assertEquals(allMatchingVacancies.get(1).getId(), noEducationVacancy.getId());
+        assertEquals(allMatchingVacancies.get(2).getId(), medicalVacancy.getId());
+        assertEquals(allMatchingVacancies.get(3).getId(), technicalVacancy.getId());
     }
 
     private Company persistCompany(String name, String description) {
