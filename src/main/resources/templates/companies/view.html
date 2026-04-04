@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Карточка компании</p>
+            <h1 id="company-card-title" th:text="${company.name}">Компания</h1>
+            <p class="muted-text">Карточка объединяет описание компании, список вакансий и переходы в связанные сценарии.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button secondary" id="back-to-companies-link" th:href="@{/companies}">К списку компаний</a>
+            <a class="button secondary" id="edit-company-link" th:href="@{/companies/{id}/edit(id=${company.id})}">Редактировать</a>
+            <a class="button primary" id="add-vacancy-link" th:href="@{/companies/{id}/vacancies/new(id=${company.id})}">Добавить вакансию</a>
+            <button class="button danger" disabled type="button">Удаление на следующем этапе</button>
+        </div>
+    </section>
+
+    <section class="details-grid details-grid-wide">
+        <article class="panel">
+            <h2>О компании</h2>
+            <dl class="details-list">
+                <div>
+                    <dt>Название</dt>
+                    <dd th:text="${company.name}">Компания</dd>
+                </div>
+                <div>
+                    <dt>Описание</dt>
+                    <dd th:text="${company.description != null and !company.description.isBlank() ? company.description : 'Описание пока не заполнено.'}">
+                        Описание
+                    </dd>
+                </div>
+                <div>
+                    <dt>Открытых вакансий</dt>
+                    <dd th:text="${openVacancyCount}">0</dd>
+                </div>
+            </dl>
+        </article>
+
+        <article class="panel">
+            <h2>Ограничения удаления</h2>
+            <div class="info-box" th:if="${hasWorkExperienceLinks}">
+                Компания связана с историей работы кандидатов, поэтому удаление должно учитывать ограничения БД.
+            </div>
+            <div class="info-box" th:if="${!hasWorkExperienceLinks}">
+                Прямых ссылок из истории работы сейчас нет. Само действие удаления будет добавлено следующим этапом.
+            </div>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="table-title-row">
+            <h2>Вакансии компании</h2>
+            <span class="table-counter" th:text="'Всего: ' + ${company.vacancies.size()}">Всего: 0</span>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(company.vacancies)}">
+            У компании пока нет вакансий.
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(company.vacancies)}">
+            <thead>
+            <tr>
+                <th>Должность</th>
+                <th>Зарплата</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="vacancy : ${company.vacancies}">
+                <td th:text="${vacancy.position}">Должность</td>
+                <td th:text="${vacancy.salary}">0</td>
+                <td>
+                    <span class="status-chip"
+                          th:classappend="${vacancy.status} ? ' open' : ' closed'"
+                          th:text="${vacancy.status} ? 'Открыта' : 'Закрыта'">
+                        Открыта
+                    </span>
+                </td>
+                <td>
+                    <a class="table-action-link"
+                       th:id="'vacancy-link-' + ${vacancy.id}"
+                       th:href="@{/vacancies/{id}(id=${vacancy.id})}">
+                        Открыть карточку
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

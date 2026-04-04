@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="hero-card">
+        <p class="eyebrow">Практикум, этап 3</p>
+        <h1>Веб-интерфейс кадрового агентства</h1>
+        <p class="lead">
+            Главная страница теперь ведёт в основные разделы проекта и показывает,
+            какие части интерфейса уже работают полностью, а какие подготовлены как каркас
+            следующего этапа разработки.
+        </p>
+        <div class="hero-actions hero-actions-wide">
+            <a class="button primary" id="home-people-link" th:href="@{/people}">Открыть раздел "Люди"</a>
+            <a class="button primary" id="home-companies-link" th:href="@{/companies}">Открыть раздел "Компании"</a>
+            <a class="button secondary" id="home-add-person-link" th:href="@{/people/new}">Добавить человека</a>
+            <a class="button secondary" id="home-add-company-link" th:href="@{/companies/new}">Добавить компанию</a>
+        </div>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat-card">
+            <h2>Люди</h2>
+            <p class="stat-number" th:text="${peopleCount}">0</p>
+            <p>Всего резюме в базе.</p>
+        </article>
+        <article class="stat-card">
+            <h2>Компании</h2>
+            <p class="stat-number" th:text="${companyCount}">0</p>
+            <p>Компании-работодатели.</p>
+        </article>
+        <article class="stat-card">
+            <h2>Открытые вакансии</h2>
+            <p class="stat-number" th:text="${openVacancyCount}">0</p>
+            <p>Активные предложения.</p>
+        </article>
+    </section>
+
+    <section class="route-grid">
+        <article class="route-card">
+            <div class="card-topline">
+                <p class="eyebrow">Раздел</p>
+                <span class="status-chip ready">Готово</span>
+            </div>
+            <h2>Люди и резюме</h2>
+            <p class="muted-text">
+                Полноценный рабочий раздел: список, карточка человека, создание, редактирование,
+                фильтры и переходы к следующим сценариям.
+            </p>
+            <div class="hero-actions">
+                <a class="button primary" th:href="@{/people}">Перейти к людям</a>
+                <a class="button secondary" th:href="@{/people/new}">Добавить человека</a>
+            </div>
+        </article>
+
+        <article class="route-card">
+            <div class="card-topline">
+                <p class="eyebrow">Раздел</p>
+                <span class="status-chip skeleton">Каркас</span>
+            </div>
+            <h2>Компании и вакансии</h2>
+            <p class="muted-text">
+                Реальные списки и карточки уже доступны, а формы и действия подготовлены
+                как структурный UI для следующего этапа.
+            </p>
+            <div class="hero-actions">
+                <a class="button primary" th:href="@{/companies}">Перейти к компаниям</a>
+                <a class="button secondary" th:href="@{/companies/new}">Открыть форму компании</a>
+            </div>
+        </article>
+
+        <article class="route-card">
+            <div class="card-topline">
+                <p class="eyebrow">Этап</p>
+                <span class="status-chip skeleton">Навигация готова</span>
+            </div>
+            <h2>Подбор и история работы</h2>
+            <p class="muted-text">
+                Страницы подбора и формы работы уже связаны с карточками сущностей,
+                поэтому можно пройти весь пользовательский сценарий на уровне интерфейса.
+            </p>
+            <ul class="compact-list">
+                <li>Карточка человека ведёт к истории работы и подбору вакансий.</li>
+                <li>Карточка вакансии ведёт к подбору резюме.</li>
+                <li>При непредвиденной ошибке пользователь попадает на отдельный экран.</li>
+            </ul>
+        </article>
+    </section>
+</main>
+</body>
+</html>

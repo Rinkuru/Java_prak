@@ -189,10 +189,8 @@ public class PersonDaoImpl implements PersonDao {
 
         StringBuilder jpql = new StringBuilder(
                 """
-                select distinct p
+                select p
                 from Person p
-                left join fetch p.workExperiences we
-                left join fetch we.company
                 where 1 = 1
                 """
         );

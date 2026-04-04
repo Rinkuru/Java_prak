@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Раздел</p>
+            <h1>Список людей</h1>
+            <p class="muted-text">Рабочий список резюме с фильтрами, сортировкой и переходом в карточку человека.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button secondary" id="people-home-link" th:href="@{/}">На главную</a>
+            <a class="button primary" id="add-person-link" th:href="@{/people/new}">Добавить человека</a>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Фильтры</h2>
+        <form class="filters-grid" method="get" th:action="@{/people}">
+            <label>
+                <span>Образование</span>
+                <select id="filter-education" name="education">
+                    <option value="" th:selected="${filterEducation == ''}">Любое</option>
+                    <option th:each="educationOption : ${educationOptions}"
+                            th:selected="${filterEducation == educationOption}"
+                            th:text="${educationOption}"
+                            th:value="${educationOption}">
+                        Образование
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <span>Статус</span>
+                <select id="filter-status" name="status">
+                    <option value="" th:selected="${filterStatus == ''}">Любой</option>
+                    <option value="true" th:selected="${filterStatus == 'true'}">Ищет работу</option>
+                    <option value="false" th:selected="${filterStatus == 'false'}">Не ищет работу</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Зарплата от</span>
+                <input id="filter-min-salary" name="minDesiredSalary" step="10000" th:value="${filterMinDesiredSalary}" type="number">
+            </label>
+
+            <label>
+                <span>Зарплата до</span>
+                <input id="filter-max-salary" name="maxDesiredSalary" step="10000" th:value="${filterMaxDesiredSalary}" type="number">
+            </label>
+
+            <label>
+                <span>Компания из опыта</span>
+                <select id="filter-company" name="workedCompanyId">
+                    <option value="">Любая</option>
+                    <option th:each="company : ${companies}"
+                            th:selected="${filterWorkedCompanyId != null and company.id == filterWorkedCompanyId}"
+                            th:text="${company.name}"
+                            th:value="${company.id}">
+                        Компания
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <span>Должность из опыта</span>
+                <input id="filter-position" name="workedPosition" th:value="${filterWorkedPosition}" type="text">
+            </label>
+
+            <label>
+                <span>Сортировка зарплаты</span>
+                <select id="filter-sort" name="sort">
+                    <option value="asc" th:selected="${sortDirection == 'asc'}">По возрастанию</option>
+                    <option value="desc" th:selected="${sortDirection == 'desc'}">По убыванию</option>
+                </select>
+            </label>
+
+            <div class="filters-actions">
+                <button class="button primary" id="filter-submit" type="submit">Применить</button>
+                <a class="button secondary" id="filter-reset" th:href="@{/people}">Сбросить</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="table-title-row">
+            <h2>Список резюме</h2>
+            <span class="table-counter" th:text="'Найдено: ' + ${people.size()}">Найдено: 0</span>
+        </div>
+
+        <div class="empty-state" th:if="${!hasFilterError and people.isEmpty()}">
+            По текущим фильтрам ничего не найдено.
+        </div>
+
+        <table class="data-table" th:if="${!people.isEmpty()}">
+            <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Образование</th>
+                <th>Статус</th>
+                <th>Желаемая должность</th>
+                <th>Желаемая зарплата</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="person : ${people}">
+                <td>
+                    <a th:href="@{/people/{id}(id=${person.id})}"
+                       th:id="'person-link-' + ${person.id}"
+                       th:text="${person.fullName}">
+                        Имя
+                    </a>
+                </td>
+                <td th:text="${person.education}">Образование</td>
+                <td th:text="${person.status} ? 'Ищет работу' : 'Не ищет работу'">Статус</td>
+                <td th:text="${person.desiredPosition != null ? person.desiredPosition : '—'}">Должность</td>
+                <td th:text="${person.desiredSalary != null ? person.desiredSalary : '—'}">0</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

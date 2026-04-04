@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Форма</p>
+            <h1 th:text="'Редактирование вакансии: ' + ${vacancy.position}">Редактирование вакансии</h1>
+            <p class="muted-text">Каркас формы редактирования с уже загруженными данными вакансии.</p>
+        </div>
+        <a class="button secondary" id="vacancy-edit-back-link" th:href="${backLink}">Назад</a>
+    </section>
+
+    <section class="panel form-panel">
+        <div class="info-box">
+            Значения подставлены из карточки вакансии. Сохранение будет подключено на следующем этапе.
+        </div>
+
+        <form class="entity-form" th:object="${vacancyForm}">
+            <label>
+                <span>Компания</span>
+                <select id="vacancy-company-input" th:field="*{companyId}">
+                    <option th:each="companyOption : ${companies}"
+                            th:value="${companyOption.id}"
+                            th:text="${companyOption.name}">
+                        Компания
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <span>Должность</span>
+                <input id="vacancy-position-input" th:field="*{position}" type="text">
+            </label>
+
+            <label>
+                <span>Зарплата</span>
+                <input id="vacancy-salary-input" step="10000" th:field="*{salary}" type="number">
+            </label>
+
+            <label>
+                <span>Требование к образованию</span>
+                <input id="vacancy-education-input" th:field="*{requiredEducation}" type="text">
+            </label>
+
+            <label>
+                <span>Требования к послужному списку</span>
+                <textarea id="vacancy-requirements-input" rows="5" th:field="*{requirements}"></textarea>
+            </label>
+
+            <label>
+                <span>Статус</span>
+                <select id="vacancy-status-input" th:field="*{status}">
+                    <option th:value="true">Открыта</option>
+                    <option th:value="false">Закрыта</option>
+                </select>
+            </label>
+
+            <div class="form-actions">
+                <button class="button primary" disabled id="save-vacancy-button" type="button">Сохранение будет добавлено позже</button>
+                <a class="button secondary" th:href="${backLink}">Отмена</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

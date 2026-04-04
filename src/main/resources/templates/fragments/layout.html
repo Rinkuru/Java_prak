@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title}">Кадровое агентство</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header" th:fragment="header(activePage)">
+    <div class="shell header-inner">
+        <a class="brand" id="nav-brand-link" th:href="@{/}">Кадровое агентство</a>
+        <nav class="main-nav">
+            <a id="nav-home-link"
+               th:classappend="${activePage == 'home'} ? ' is-active'"
+               th:href="@{/}">Главная</a>
+            <a id="nav-people-link"
+               th:classappend="${activePage == 'people'} ? ' is-active'"
+               th:href="@{/people}">Люди</a>
+            <a id="nav-companies-link"
+               th:classappend="${activePage == 'companies'} ? ' is-active'"
+               th:href="@{/companies}">Компании</a>
+        </nav>
+    </div>
+</header>
+
+<div class="shell" th:fragment="messages">
+    <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+</div>
+</body>
+</html>

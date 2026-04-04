@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top" th:if="${mode == 'vacanciesForPerson'}">
+        <div>
+            <p class="eyebrow">Результаты подбора</p>
+            <h1 th:text="'Подходящие вакансии для ' + ${person.fullName}">Подходящие вакансии</h1>
+            <p class="muted-text">Список построен на реальном DAO подбора и доступен прямо из карточки человека.</p>
+        </div>
+        <a class="button secondary" id="matches-back-link" th:href="${backLink}">Назад</a>
+    </section>
+
+    <section class="page-top" th:if="${mode == 'peopleForVacancy'}">
+        <div>
+            <p class="eyebrow">Результаты подбора</p>
+            <h1 th:text="'Подходящие резюме для вакансии ' + ${vacancy.position}">Подходящие резюме</h1>
+            <p class="muted-text">Список показывает людей, которые соответствуют параметрам вакансии.</p>
+        </div>
+        <a class="button secondary" id="matches-back-link" th:href="${backLink}">Назад</a>
+    </section>
+
+    <section class="panel" th:if="${mode == 'vacanciesForPerson'}">
+        <h2>Параметры просмотра</h2>
+        <form class="filters-grid filters-grid-compact" method="get" th:action="@{/people/{id}/matches(id=${person.id})}">
+            <label class="checkbox-line checkbox-card">
+                <input id="matches-only-active-input" name="onlyActive" th:checked="${onlyActive}" type="checkbox" value="true">
+                <span>Только открытые вакансии</span>
+            </label>
+
+            <label>
+                <span>Сортировка по зарплате</span>
+                <select id="matches-sort-input" name="sort">
+                    <option value="asc" th:selected="${sortDirection == 'asc'}">По возрастанию</option>
+                    <option value="desc" th:selected="${sortDirection == 'desc'}">По убыванию</option>
+                </select>
+            </label>
+
+            <div class="filters-actions">
+                <button class="button primary" id="matching-filter-submit" type="submit">Обновить</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" th:if="${mode == 'peopleForVacancy'}">
+        <h2>Параметры просмотра</h2>
+        <form class="filters-grid filters-grid-compact" method="get" th:action="@{/vacancies/{id}/matches(id=${vacancy.id})}">
+            <label class="checkbox-line checkbox-card">
+                <input id="matches-only-looking-input" name="onlyLookingForJob" th:checked="${onlyLookingForJob}" type="checkbox" value="true">
+                <span>Только ищущие работу</span>
+            </label>
+
+            <label>
+                <span>Сортировка по зарплатным ожиданиям</span>
+                <select id="matches-sort-input" name="sort">
+                    <option value="asc" th:selected="${sortDirection == 'asc'}">По возрастанию</option>
+                    <option value="desc" th:selected="${sortDirection == 'desc'}">По убыванию</option>
+                </select>
+            </label>
+
+            <div class="filters-actions">
+                <button class="button primary" id="matching-filter-submit" type="submit">Обновить</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" th:if="${mode == 'vacanciesForPerson'}">
+        <div class="table-title-row">
+            <h2>Список вакансий</h2>
+            <span class="table-counter" th:text="'Найдено: ' + ${vacancies.size()}">Найдено: 0</span>
+        </div>
+
+        <div class="info-box"
+             th:if="${(person.desiredPosition == null or person.desiredPosition.isBlank()) or person.desiredSalary == null}">
+            Для содержательного подбора у человека должны быть заполнены желаемая должность и желаемая зарплата.
+        </div>
+
+        <div class="empty-state" th:if="${vacancies.isEmpty()}">
+            Подходящих вакансий по текущим условиям не найдено.
+        </div>
+
+        <table class="data-table" th:if="${!vacancies.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Должность</th>
+                <th>Компания</th>
+                <th>Зарплата</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="vacancyItem : ${vacancies}">
+                <td th:text="${vacancyItem.position}">Должность</td>
+                <td th:text="${vacancyItem.company.name}">Компания</td>
+                <td th:text="${vacancyItem.salary}">0</td>
+                <td>
+                    <span class="status-chip"
+                          th:classappend="${vacancyItem.status} ? ' open' : ' closed'"
+                          th:text="${vacancyItem.status} ? 'Открыта' : 'Закрыта'">
+                        Открыта
+                    </span>
+                </td>
+                <td>
+                    <a class="table-action-link"
+                       th:id="'match-vacancy-link-' + ${vacancyItem.id}"
+                       th:href="@{/vacancies/{id}(id=${vacancyItem.id})}">
+                        Открыть карточку
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel" th:if="${mode == 'peopleForVacancy'}">
+        <div class="table-title-row">
+            <h2>Список резюме</h2>
+            <span class="table-counter" th:text="'Найдено: ' + ${people.size()}">Найдено: 0</span>
+        </div>
+
+        <div class="empty-state" th:if="${people.isEmpty()}">
+            Подходящих резюме по текущим условиям не найдено.
+        </div>
+
+        <table class="data-table" th:if="${!people.isEmpty()}">
+            <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Образование</th>
+                <th>Статус</th>
+                <th>Желаемая должность</th>
+                <th>Желаемая зарплата</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="personItem : ${people}">
+                <td>
+                    <a th:href="@{/people/{id}(id=${personItem.id})}"
+                       th:id="'match-person-link-' + ${personItem.id}"
+                       th:text="${personItem.fullName}">
+                        ФИО
+                    </a>
+                </td>
+                <td th:text="${personItem.education}">Образование</td>
+                <td th:text="${personItem.status} ? 'Ищет работу' : 'Не ищет работу'">Статус</td>
+                <td th:text="${personItem.desiredPosition != null ? personItem.desiredPosition : '—'}">—</td>
+                <td th:text="${personItem.desiredSalary != null ? personItem.desiredSalary : '—'}">—</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

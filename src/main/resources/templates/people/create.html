@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Форма</p>
+            <h1>Добавление человека</h1>
+            <p class="muted-text">Рабочая форма создания нового резюме.</p>
+        </div>
+        <a class="button secondary" id="person-create-back-link" th:href="${backLink}">
+            Назад
+        </a>
+    </section>
+
+    <section class="panel form-panel">
+        <form class="entity-form" method="post" th:action="${formAction}" th:object="${personForm}">
+            <div class="message error" th:if="${#fields.hasErrors('*')}">
+                <p>Форма содержит ошибки:</p>
+                <ul class="error-list">
+                    <li th:each="error : ${#fields.errors('*')}" th:text="${error}">Ошибка</li>
+                </ul>
+            </div>
+
+            <label>
+                <span>ФИО</span>
+                <input id="fullName-input" th:field="*{fullName}" type="text">
+                <small class="field-error" th:errors="*{fullName}"></small>
+            </label>
+
+            <label>
+                <span>Домашний адрес</span>
+                <textarea id="homeAddress-input" rows="3" th:field="*{homeAddress}"></textarea>
+                <small class="field-error" th:errors="*{homeAddress}"></small>
+            </label>
+
+            <label>
+                <span>Образование</span>
+                <select id="education-input" th:field="*{education}">
+                    <option value="">Выберите образование</option>
+                    <option th:each="educationOption : ${educationOptions}"
+                            th:text="${educationOption}"
+                            th:value="${educationOption}">
+                        Образование
+                    </option>
+                </select>
+                <small class="field-error" th:errors="*{education}"></small>
+            </label>
+
+            <label>
+                <span>Статус</span>
+                <select id="status-input" th:field="*{status}">
+                    <option th:value="true">Ищет работу</option>
+                    <option th:value="false">Не ищет работу</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Желаемая должность</span>
+                <input id="desiredPosition-input" th:field="*{desiredPosition}" type="text">
+                <small class="field-error" th:errors="*{desiredPosition}"></small>
+            </label>
+
+            <label>
+                <span>Желаемая зарплата</span>
+                <input id="desiredSalary-input" step="10000" th:field="*{desiredSalary}" type="number">
+                <small class="field-error" th:errors="*{desiredSalary}"></small>
+            </label>
+
+            <div class="form-actions">
+                <button class="button primary" id="save-person-button" type="submit">Сохранить</button>
+                <a class="button secondary" th:href="${backLink}">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

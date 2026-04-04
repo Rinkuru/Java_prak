@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Форма</p>
+            <h1>Добавление компании</h1>
+            <p class="muted-text">Структурный каркас формы: поля готовы, сохранение будет добавлено следующим этапом.</p>
+        </div>
+        <a class="button secondary" id="company-create-back-link" th:href="${backLink}">Назад</a>
+    </section>
+
+    <section class="panel form-panel">
+        <div class="info-box">
+            Это каркас страницы. Поля и навигация уже готовы, а обработка сохранения появится на следующем этапе.
+        </div>
+
+        <form class="entity-form" th:object="${companyForm}">
+            <label>
+                <span>Название компании</span>
+                <input id="company-name-input" th:field="*{name}" type="text">
+            </label>
+
+            <label>
+                <span>Описание</span>
+                <textarea id="company-description-input" rows="5" th:field="*{description}"></textarea>
+            </label>
+
+            <div class="form-actions">
+                <button class="button primary" disabled id="save-company-button" type="button">Сохранение будет добавлено позже</button>
+                <a class="button secondary" th:href="${backLink}">Отмена</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Карточка человека</p>
+            <h1 id="person-card-title" th:text="${person.fullName}">ФИО</h1>
+            <p class="muted-text">Карточка объединяет основные данные, пожелания по работе и историю трудоустройства.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button secondary" id="back-to-people-link" th:href="@{/people}">К списку людей</a>
+            <a class="button secondary" id="edit-person-link" th:href="@{/people/{id}/edit(id=${person.id})}">Редактировать</a>
+            <a class="button primary" id="person-matches-link" th:href="@{/people/{id}/matches(id=${person.id})}">Подобрать вакансии</a>
+            <a class="button secondary" id="add-work-experience-link" th:href="@{/people/{id}/work-experiences/new(id=${person.id})}">
+                Добавить запись о работе
+            </a>
+            <form class="inline-form" method="post" th:action="@{/people/{id}/delete(id=${person.id})}">
+                <button class="button danger" id="delete-person-button" type="submit">Удалить</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="details-grid details-grid-wide">
+        <article class="panel">
+            <h2>Основные данные</h2>
+            <dl class="details-list">
+                <div>
+                    <dt>Домашний адрес</dt>
+                    <dd th:text="${person.homeAddress != null ? person.homeAddress : '—'}">—</dd>
+                </div>
+                <div>
+                    <dt>Образование</dt>
+                    <dd th:text="${person.education}">—</dd>
+                </div>
+                <div>
+                    <dt>Статус</dt>
+                    <dd th:text="${person.status} ? 'Ищет работу' : 'Не ищет работу'">—</dd>
+                </div>
+            </dl>
+        </article>
+
+        <article class="panel">
+            <h2>Условия желаемой работы</h2>
+            <dl class="details-list">
+                <div>
+                    <dt>Желаемая должность</dt>
+                    <dd th:text="${person.desiredPosition != null ? person.desiredPosition : '—'}">—</dd>
+                </div>
+                <div>
+                    <dt>Желаемая зарплата</dt>
+                    <dd th:text="${person.desiredSalary != null ? person.desiredSalary : '—'}">—</dd>
+                </div>
+            </dl>
+        </article>
+
+        <article class="panel">
+            <h2>История работы</h2>
+            <p class="muted-text">Отсюда открывается добавление и редактирование каждой записи.</p>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(person.workExperiences)}">
+                История работы пока не заполнена.
+                <div class="hero-actions top-gap">
+                    <a class="button secondary" th:href="@{/people/{id}/work-experiences/new(id=${person.id})}">
+                        Создать первую запись
+                    </a>
+                </div>
+            </div>
+
+            <table class="data-table" th:if="${!#lists.isEmpty(person.workExperiences)}">
+                <thead>
+                <tr>
+                    <th>Компания</th>
+                    <th>Должность</th>
+                    <th>Зарплата</th>
+                    <th>Период</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="workExperience : ${person.workExperiences}">
+                    <td th:text="${workExperience.company.name}">Компания</td>
+                    <td th:text="${workExperience.position}">Должность</td>
+                    <td th:text="${workExperience.salary}">0</td>
+                    <td>
+                        <span th:text="${workExperience.startDate}">2024-01-01</span>
+                        <span> - </span>
+                        <span th:text="${workExperience.endDate != null ? workExperience.endDate : 'по настоящее время'}">
+                            по настоящее время
+                        </span>
+                    </td>
+                    <td>
+                        <a class="table-action-link"
+                           th:id="'edit-work-link-' + ${workExperience.id}"
+                           th:href="@{/people/{personId}/work-experiences/{workExperienceId}/edit(personId=${person.id}, workExperienceId=${workExperience.id})}">
+                            Редактировать
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+</main>
+</body>
+</html>

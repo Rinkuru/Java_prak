@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Карточка вакансии</p>
+            <h1 id="vacancy-card-title" th:text="${vacancy.position}">Вакансия</h1>
+            <p class="muted-text">Карточка показывает требования вакансии, компанию и переход к поиску подходящих резюме.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button secondary" id="vacancy-company-link" th:href="@{/companies/{id}(id=${vacancy.company.id})}">К компании</a>
+            <a class="button secondary" id="edit-vacancy-link" th:href="@{/vacancies/{id}/edit(id=${vacancy.id})}">Редактировать</a>
+            <a class="button primary" id="vacancy-matches-link" th:href="@{/vacancies/{id}/matches(id=${vacancy.id})}">Подобрать резюме</a>
+        </div>
+    </section>
+
+    <section class="details-grid details-grid-wide">
+        <article class="panel">
+            <h2>Основные данные</h2>
+            <dl class="details-list">
+                <div>
+                    <dt>Компания</dt>
+                    <dd>
+                        <a th:href="@{/companies/{id}(id=${vacancy.company.id})}" th:text="${vacancy.company.name}">Компания</a>
+                    </dd>
+                </div>
+                <div>
+                    <dt>Должность</dt>
+                    <dd th:text="${vacancy.position}">—</dd>
+                </div>
+                <div>
+                    <dt>Зарплата</dt>
+                    <dd th:text="${vacancy.salary}">—</dd>
+                </div>
+                <div>
+                    <dt>Статус</dt>
+                    <dd>
+                        <span class="status-chip"
+                              th:classappend="${vacancy.status} ? ' open' : ' closed'"
+                              th:text="${vacancy.status} ? 'Открыта' : 'Закрыта'">
+                            Открыта
+                        </span>
+                    </dd>
+                </div>
+            </dl>
+        </article>
+
+        <article class="panel">
+            <h2>Требования</h2>
+            <dl class="details-list">
+                <div>
+                    <dt>Требование к образованию</dt>
+                    <dd th:text="${vacancy.requiredEducation != null and !vacancy.requiredEducation.isBlank() ? vacancy.requiredEducation : 'Не задано'}">—</dd>
+                </div>
+                <div>
+                    <dt>Требования к послужному списку</dt>
+                    <dd th:text="${vacancy.requirements != null and !vacancy.requirements.isBlank() ? vacancy.requirements : 'Не заданы'}">—</dd>
+                </div>
+            </dl>
+        </article>
+    </section>
+
+    <section class="panel">
+        <h2>Запланированные действия</h2>
+        <div class="hero-actions">
+            <button class="button secondary" disabled type="button">Закрытие будет добавлено следующим этапом</button>
+            <button class="button secondary" disabled type="button">Переоткрытие будет добавлено следующим этапом</button>
+            <button class="button danger" disabled type="button">Удаление будет добавлено следующим этапом</button>
+        </div>
+    </section>
+</main>
+</body>
+</html>

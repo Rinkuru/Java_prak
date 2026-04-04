@@ -6,6 +6,7 @@
     <property name="db.user"     value="postgres"/>
     <property name="db.password" value="postgres"/>
     <property name="docker.compose.file" value="${basedir}/psql/docker-compose.yml"/>
+    <property name="docker.bin" value="docker"/>
     <property name="project.root" value="${basedir}/.."/>
     <property name="gradle.wrapper" value="${project.root}/gradlew"/>
     <property name="gradle.user.home" value="${project.root}/.gradle-ant"/>
@@ -92,49 +93,57 @@
     <!-- ===================== DOCKER COMPOSE ===================== -->
     <target name="docker-up" description="Запустить PostgreSQL в Docker Compose">
         <echo>Запуск PostgreSQL через Docker Compose...</echo>
-        <exec executable="sg"
+        <exec executable="${docker.bin}"
               failonerror="true">
-            <arg value="docker"/>
-            <arg value="-c"/>
-            <arg value="docker compose -f '${docker.compose.file}' up -d"/>
+            <arg value="compose"/>
+            <arg value="-f"/>
+            <arg value="${docker.compose.file}"/>
+            <arg value="up"/>
+            <arg value="-d"/>
         </exec>
     </target>
 
     <target name="docker-stop" description="Остановить контейнеры Docker Compose без удаления">
         <echo>Остановка контейнеров Docker Compose...</echo>
-        <exec executable="sg"
+        <exec executable="${docker.bin}"
               failonerror="true">
-            <arg value="docker"/>
-            <arg value="-c"/>
-            <arg value="docker compose -f '${docker.compose.file}' stop"/>
+            <arg value="compose"/>
+            <arg value="-f"/>
+            <arg value="${docker.compose.file}"/>
+            <arg value="stop"/>
         </exec>
     </target>
 
     <target name="docker-down" description="Остановить и удалить контейнеры Docker Compose">
         <echo>Остановка и удаление контейнеров Docker Compose...</echo>
-        <exec executable="sg"
+        <exec executable="${docker.bin}"
               failonerror="true">
-            <arg value="docker"/>
-            <arg value="-c"/>
-            <arg value="docker compose -f '${docker.compose.file}' down"/>
+            <arg value="compose"/>
+            <arg value="-f"/>
+            <arg value="${docker.compose.file}"/>
+            <arg value="down"/>
         </exec>
     </target>
 
     <target name="docker-down-volumes" description="Остановить, удалить контейнеры и volumes">
         <echo>Остановка и удаление контейнеров Docker Compose и удаление volumes...</echo>
-        <exec executable="sg" failonerror="true">
-            <arg value="docker"/>
-            <arg value="-c"/>
-            <arg value="docker compose -f '${docker.compose.file}' down -v"/>
+        <exec executable="${docker.bin}" failonerror="true">
+            <arg value="compose"/>
+            <arg value="-f"/>
+            <arg value="${docker.compose.file}"/>
+            <arg value="down"/>
+            <arg value="-v"/>
         </exec>
     </target>
 
     <target name="docker-logs" description="Показать логи PostgreSQL-контейнера">
-        <exec executable="sg"
+        <exec executable="${docker.bin}"
               failonerror="true">
-            <arg value="docker"/>
-            <arg value="-c"/>
-            <arg value="docker compose -f '${docker.compose.file}' logs postgres"/>
+            <arg value="compose"/>
+            <arg value="-f"/>
+            <arg value="${docker.compose.file}"/>
+            <arg value="logs"/>
+            <arg value="postgres"/>
         </exec>
     </target>
 
@@ -143,7 +152,7 @@
         <exec executable="bash"
               failonerror="true">
             <arg value="-lc"/>
-            <arg value="if ! sg docker -c &quot;docker inspect postgres_container&quot; >/dev/null 2>&amp;1; then echo &quot;Container postgres_container is not created&quot; >&amp;2; exit 1; fi; for i in $(seq 1 30); do status=$(sg docker -c &quot;docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' postgres_container&quot; 2>/dev/null || true); if [ &quot;$status&quot; = &quot;healthy&quot; ]; then exit 0; fi; sleep 2; done; echo &quot;PostgreSQL container exists but is not healthy&quot; >&amp;2; exit 1"/>
+            <arg value="if ! ${docker.bin} inspect postgres_container >/dev/null 2>&amp;1; then echo &quot;Container postgres_container is not created&quot; >&amp;2; exit 1; fi; for i in $(seq 1 30); do status=$(${docker.bin} inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' postgres_container 2>/dev/null || true); if [ &quot;$status&quot; = &quot;healthy&quot; ]; then exit 0; fi; sleep 2; done; echo &quot;PostgreSQL container exists but is not healthy&quot; >&amp;2; exit 1"/>
         </exec>
         <echo>PostgreSQL доступен.</echo>
     </target>
@@ -174,14 +183,7 @@
         <exec executable="bash"
               failonerror="true">
             <arg value="-lc"/>
-            <arg value="if sg docker -c &quot;
-                        docker exec postgres_container psql -U ${db.user} -d postgres -tAc \&quot;
-                        SELECT 1 FROM pg_database WHERE datname='hr_agency'\&quot;
-                        &quot; | grep -q 1; then echo &quot;
-                        База данных hr_agency уже существует.&quot;;
-                        else sg docker -c &quot;
-                        docker exec postgres_container psql -U ${db.user} -d postgres -c \&quot;
-                        CREATE DATABASE hr_agency ENCODING 'UTF8' TEMPLATE template0\&quot;&quot;; fi"/>
+            <arg value="if ${docker.bin} exec postgres_container psql -U ${db.user} -d postgres -tAc &quot;SELECT 1 FROM pg_database WHERE datname='hr_agency'&quot; | grep -q 1; then echo &quot;База данных hr_agency уже существует.&quot;; else ${docker.bin} exec postgres_container psql -U ${db.user} -d postgres -c &quot;CREATE DATABASE hr_agency ENCODING 'UTF8' TEMPLATE template0&quot;; fi"/>
         </exec>
     </target>
 

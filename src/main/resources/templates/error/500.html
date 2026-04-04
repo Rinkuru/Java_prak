@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="hero-card">
+        <p class="eyebrow">Непредвиденная ошибка</p>
+        <h1>Что-то пошло не так</h1>
+        <p class="lead">
+            Сервер столкнулся с внутренней ошибкой при обработке запроса. Страница уже
+            перевела пользователя на безопасный экран, откуда можно вернуться в рабочий раздел.
+        </p>
+        <div class="info-box">
+            Последний запрос: <code th:text="${requestUri}">/example</code>
+        </div>
+        <div class="hero-actions top-gap">
+            <a class="button primary" id="error-home-link" th:href="@{/}">На главную</a>
+            <a class="button secondary" id="error-section-link" th:href="${sectionLink}" th:text="${sectionLabel}">
+                Перейти к разделу
+            </a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

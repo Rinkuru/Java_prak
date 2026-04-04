@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="panel">
+        <p class="eyebrow">Smoke test</p>
+        <h1>Тестовая Thymeleaf-страница</h1>
+        <p>
+            Эта страница нужна как самый простой признак того, что связка
+            <code>@Controller + template</code> уже работает.
+        </p>
+        <a class="button primary" id="test-to-home-link" th:href="@{/}">Вернуться на главную</a>
+    </section>
+</main>
+</body>
+</html>

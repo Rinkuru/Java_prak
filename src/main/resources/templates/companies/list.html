@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: header(${activePage})}"></div>
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<main class="shell page">
+    <section class="page-top">
+        <div>
+            <p class="eyebrow">Раздел</p>
+            <h1>Список компаний</h1>
+            <p class="muted-text">Каркас раздела работодателей с реальным списком компаний и навигацией в карточки.</p>
+        </div>
+        <div class="page-actions">
+            <a class="button secondary" id="companies-home-link" th:href="@{/}">На главную</a>
+            <a class="button primary" id="add-company-link" th:href="@{/companies/new}">Добавить компанию</a>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Фильтры</h2>
+        <form class="filters-grid filters-grid-compact" method="get" th:action="@{/companies}">
+            <label>
+                <span>Название</span>
+                <input id="company-name-filter" name="name" th:value="${filterName}" type="text">
+            </label>
+
+            <label class="checkbox-line checkbox-card">
+                <input id="company-open-filter" name="onlyWithOpenVacancies" th:checked="${filterOnlyWithOpenVacancies}" type="checkbox" value="true">
+                <span>Только с открытыми вакансиями</span>
+            </label>
+
+            <div class="filters-actions">
+                <button class="button primary" id="company-filter-submit" type="submit">Применить</button>
+                <a class="button secondary" th:href="@{/companies}">Сбросить</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="table-title-row">
+            <h2>Компании</h2>
+            <span class="table-counter" th:text="'Найдено: ' + ${companyItems.size()}">Найдено: 0</span>
+        </div>
+
+        <div class="empty-state" th:if="${companyItems.isEmpty()}">
+            Компании по текущим фильтрам не найдены.
+        </div>
+
+        <table class="data-table" th:if="${!companyItems.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Компания</th>
+                <th>Описание</th>
+                <th>Всего вакансий</th>
+                <th>Открытых вакансий</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="companyItem : ${companyItems}">
+                <td>
+                    <a th:href="@{/companies/{id}(id=${companyItem.id})}"
+                       th:id="'company-link-' + ${companyItem.id}"
+                       th:text="${companyItem.name}">
+                        Компания
+                    </a>
+                </td>
+                <td th:text="${companyItem.description != null and !companyItem.description.isBlank() ? companyItem.description : '—'}">—</td>
+                <td th:text="${companyItem.vacancyCount}">0</td>
+                <td th:text="${companyItem.openVacancyCount}">0</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>
