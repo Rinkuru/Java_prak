@@ -10,13 +10,11 @@
         <div>
             <p class="eyebrow">Карточка компании</p>
             <h1 id="company-card-title" th:text="${company.name}">Компания</h1>
-            <p class="muted-text">Карточка объединяет описание компании, список вакансий и переходы в связанные сценарии.</p>
+            <p class="muted-text">Карточка компании показывает описание работодателя и связанные с ним вакансии.</p>
         </div>
         <div class="page-actions">
             <a class="button secondary" id="back-to-companies-link" th:href="@{/companies}">К списку компаний</a>
-            <a class="button secondary" id="edit-company-link" th:href="@{/companies/{id}/edit(id=${company.id})}">Редактировать</a>
             <a class="button primary" id="add-vacancy-link" th:href="@{/companies/{id}/vacancies/new(id=${company.id})}">Добавить вакансию</a>
-            <button class="button danger" disabled type="button">Удаление на следующем этапе</button>
         </div>
     </section>
 
@@ -44,10 +42,10 @@
         <article class="panel">
             <h2>Ограничения удаления</h2>
             <div class="info-box" th:if="${hasWorkExperienceLinks}">
-                Компания связана с историей работы кандидатов, поэтому удаление должно учитывать ограничения БД.
+                Компания связана с историей работы кандидатов, поэтому удалить её нельзя, пока существуют эти ссылки.
             </div>
             <div class="info-box" th:if="${!hasWorkExperienceLinks}">
-                Прямых ссылок из истории работы сейчас нет. Само действие удаления будет добавлено следующим этапом.
+                Прямых ссылок из истории работы сейчас нет. Компанию можно удалить с этой страницы.
             </div>
         </article>
     </section>
@@ -92,6 +90,19 @@
             </tr>
             </tbody>
         </table>
+    </section>
+
+    <section class="panel">
+        <h2>Дополнительные действия</h2>
+        <div class="hero-actions">
+            <a class="button secondary" id="edit-company-link" th:href="@{/companies/{id}/edit(id=${company.id})}">Редактировать</a>
+            <form class="inline-form" method="post" th:action="@{/companies/{id}/delete(id=${company.id})}">
+                <button class="button danger" id="delete-company-button" type="submit">Удалить компанию</button>
+            </form>
+        </div>
+        <p class="muted-text top-gap">
+            Здесь доступны редактирование компании, удаление без связанных записей истории работы и переход к вакансиям.
+        </p>
     </section>
 </main>
 </body>

@@ -17,10 +17,17 @@
 
     <section class="panel form-panel">
         <div class="info-box">
-            Здесь будут проверки пересечения дат и сохранение записи. Сейчас страница нужна как полноценный экран навигации.
+            Если дата окончания пустая, запись считается текущим местом работы. При сохранении проверяется отсутствие пересечений дат.
         </div>
 
-        <form class="entity-form" th:object="${workExperienceForm}">
+        <form class="entity-form" method="post" th:action="${formAction}" th:object="${workExperienceForm}">
+            <div class="message error" th:if="${#fields.hasErrors('*')}">
+                <p>Форма содержит ошибки:</p>
+                <ul class="error-list">
+                    <li th:each="error : ${#fields.errors('*')}" th:text="${error}">Ошибка</li>
+                </ul>
+            </div>
+
             <label>
                 <span>Компания</span>
                 <select id="work-company-input" th:field="*{companyId}">
@@ -28,33 +35,44 @@
                         Компания
                     </option>
                 </select>
+                <small class="field-error" th:errors="*{companyId}"></small>
             </label>
 
             <label>
                 <span>Должность</span>
                 <input id="work-position-input" th:field="*{position}" type="text">
+                <small class="field-error" th:errors="*{position}"></small>
             </label>
 
             <label>
                 <span>Зарплата</span>
-                <input id="work-salary-input" step="10000" th:field="*{salary}" type="number">
+                <input class="salary-input" id="work-salary-input" step="10000" th:field="*{salary}" type="number">
+                <small class="field-error" th:errors="*{salary}"></small>
             </label>
 
             <label>
                 <span>Дата начала</span>
                 <input id="work-start-input" th:field="*{startDate}" type="date">
+                <small class="field-error" th:errors="*{startDate}"></small>
             </label>
 
             <label>
                 <span>Дата окончания</span>
                 <input id="work-end-input" th:field="*{endDate}" type="date">
+                <small class="field-error" th:errors="*{endDate}"></small>
             </label>
 
             <div class="form-actions">
-                <button class="button primary" disabled id="save-work-experience-button" type="button">Сохранение будет добавлено позже</button>
+                <button class="button primary" id="save-work-experience-button" type="submit">Сохранить запись</button>
                 <a class="button secondary" th:href="${backLink}">Отмена</a>
             </div>
         </form>
+
+        <div class="hero-actions top-gap">
+            <form class="inline-form" method="post" th:action="${deleteAction}">
+                <button class="button danger" id="delete-work-experience-button" type="submit">Удалить запись</button>
+            </form>
+        </div>
     </section>
 </main>
 </body>

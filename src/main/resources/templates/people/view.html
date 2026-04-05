@@ -10,18 +10,13 @@
         <div>
             <p class="eyebrow">Карточка человека</p>
             <h1 id="person-card-title" th:text="${person.fullName}">ФИО</h1>
-            <p class="muted-text">Карточка объединяет основные данные, пожелания по работе и историю трудоустройства.</p>
+            <p class="muted-text">Карточка объединяет основные данные человека и его историю работы.</p>
         </div>
         <div class="page-actions">
             <a class="button secondary" id="back-to-people-link" th:href="@{/people}">К списку людей</a>
-            <a class="button secondary" id="edit-person-link" th:href="@{/people/{id}/edit(id=${person.id})}">Редактировать</a>
-            <a class="button primary" id="person-matches-link" th:href="@{/people/{id}/matches(id=${person.id})}">Подобрать вакансии</a>
-            <a class="button secondary" id="add-work-experience-link" th:href="@{/people/{id}/work-experiences/new(id=${person.id})}">
+            <a class="button primary" id="add-work-experience-link" th:href="@{/people/{id}/work-experiences/new(id=${person.id})}">
                 Добавить запись о работе
             </a>
-            <form class="inline-form" method="post" th:action="@{/people/{id}/delete(id=${person.id})}">
-                <button class="button danger" id="delete-person-button" type="submit">Удалить</button>
-            </form>
         </div>
     </section>
 
@@ -60,7 +55,7 @@
 
         <article class="panel">
             <h2>История работы</h2>
-            <p class="muted-text">Отсюда открывается добавление и редактирование каждой записи.</p>
+            <p class="muted-text">Основной сценарий этапа: просмотр истории работы и добавление новой записи.</p>
 
             <div class="empty-state" th:if="${#lists.isEmpty(person.workExperiences)}">
                 История работы пока не заполнена.
@@ -104,6 +99,20 @@
                 </tbody>
             </table>
         </article>
+    </section>
+
+    <section class="panel">
+        <h2>Дополнительные действия</h2>
+        <div class="hero-actions">
+            <a class="button secondary" id="edit-person-link" th:href="@{/people/{id}/edit(id=${person.id})}">Редактировать данные</a>
+            <a class="button secondary" id="person-matches-link" th:href="@{/people/{id}/matches(id=${person.id})}">Подбор вакансий</a>
+            <form class="inline-form" method="post" th:action="@{/people/{id}/delete(id=${person.id})}">
+                <button class="button danger" id="delete-person-button" type="submit">Удалить</button>
+            </form>
+        </div>
+        <p class="muted-text top-gap">
+            Эти сценарии уже доступны в проекте, но не являются основным фокусом текущего этапа.
+        </p>
     </section>
 </main>
 </body>

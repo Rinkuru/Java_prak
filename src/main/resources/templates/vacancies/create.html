@@ -10,46 +10,49 @@
         <div>
             <p class="eyebrow">Форма</p>
             <h1 th:text="'Добавление вакансии для компании ' + ${company.name}">Добавление вакансии</h1>
-            <p class="muted-text">Каркас формы вакансии с полным набором полей и возвратом в карточку компании.</p>
+            <p class="muted-text">Форма добавления новой вакансии в карточке выбранной компании.</p>
         </div>
         <a class="button secondary" id="vacancy-create-back-link" th:href="${backLink}">Назад</a>
     </section>
 
     <section class="panel form-panel">
-        <div class="info-box">
-            Поля подготовлены, но сохранение вакансии будет подключено на следующем этапе.
-        </div>
+        <form class="entity-form" method="post" th:action="${formAction}" th:object="${vacancyForm}">
+            <div class="message error" th:if="${#fields.hasErrors('*')}">
+                <p>Форма содержит ошибки:</p>
+                <ul class="error-list">
+                    <li th:each="error : ${#fields.errors('*')}" th:text="${error}">Ошибка</li>
+                </ul>
+            </div>
 
-        <form class="entity-form" th:object="${vacancyForm}">
             <label>
                 <span>Компания</span>
-                <select id="vacancy-company-input" th:field="*{companyId}">
-                    <option th:each="companyOption : ${companies}"
-                            th:value="${companyOption.id}"
-                            th:text="${companyOption.name}">
-                        Компания
-                    </option>
-                </select>
+                <input id="vacancy-company-input" readonly th:value="${company.name}" type="text">
+                <input th:field="*{companyId}" type="hidden">
+                <small class="field-error" th:errors="*{companyId}"></small>
             </label>
 
             <label>
                 <span>Должность</span>
                 <input id="vacancy-position-input" th:field="*{position}" type="text">
+                <small class="field-error" th:errors="*{position}"></small>
             </label>
 
             <label>
                 <span>Зарплата</span>
-                <input id="vacancy-salary-input" step="10000" th:field="*{salary}" type="number">
+                <input class="salary-input" id="vacancy-salary-input" step="10000" th:field="*{salary}" type="number">
+                <small class="field-error" th:errors="*{salary}"></small>
             </label>
 
             <label>
                 <span>Требование к образованию</span>
                 <input id="vacancy-education-input" th:field="*{requiredEducation}" type="text">
+                <small class="field-error" th:errors="*{requiredEducation}"></small>
             </label>
 
             <label>
                 <span>Требования к послужному списку</span>
                 <textarea id="vacancy-requirements-input" rows="5" th:field="*{requirements}"></textarea>
+                <small class="field-error" th:errors="*{requirements}"></small>
             </label>
 
             <label>
@@ -58,10 +61,11 @@
                     <option th:value="true">Открыта</option>
                     <option th:value="false">Закрыта</option>
                 </select>
+                <small class="field-error" th:errors="*{status}"></small>
             </label>
 
             <div class="form-actions">
-                <button class="button primary" disabled id="save-vacancy-button" type="button">Сохранение будет добавлено позже</button>
+                <button class="button primary" id="save-vacancy-button" type="submit">Сохранить вакансию</button>
                 <a class="button secondary" th:href="${backLink}">Отмена</a>
             </div>
         </form>

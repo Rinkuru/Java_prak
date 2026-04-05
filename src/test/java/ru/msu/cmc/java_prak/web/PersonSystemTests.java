@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import ru.msu.cmc.java_prak.dao.CompanyDao;
 import ru.msu.cmc.java_prak.dao.PersonDao;
 import ru.msu.cmc.java_prak.dao.VacancyDao;
+import ru.msu.cmc.java_prak.dao.WorkExperienceDao;
 import ru.msu.cmc.java_prak.model.Company;
 import ru.msu.cmc.java_prak.model.Person;
 import ru.msu.cmc.java_prak.model.Vacancy;
@@ -53,6 +54,9 @@ public class PersonSystemTests extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private VacancyDao vacancyDao;
+
+    @Autowired
+    private WorkExperienceDao workExperienceDao;
 
     private WebDriver driver;
 
@@ -284,6 +288,192 @@ public class PersonSystemTests extends AbstractTestNGSpringContextTests {
     }
 
     @Test
+    public void companyFormsShouldValidateRejectDuplicateAndUpdateData() {
+        persistCompany("ВКонтакте", "IT-компания");
+        Company companyToEdit = persistCompany("T-Банк", "Финтех");
+
+        driver.get(baseUrl() + "/companies/new");
+        driver.findElement(By.id("save-company-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Форма содержит ошибки"));
+        assertTrue(driver.getPageSource().contains("Укажите название компании."));
+
+        driver.findElement(By.id("company-name-input")).sendKeys("ВКонтакте");
+        driver.findElement(By.id("save-company-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Компания с таким названием уже существует."));
+
+        driver.get(baseUrl() + "/companies/" + companyToEdit.getId() + "/edit");
+
+        WebElement companyNameInput = driver.findElement(By.id("company-name-input"));
+        companyNameInput.clear();
+        companyNameInput.sendKeys("Т-Банк Технологии");
+
+        WebElement descriptionInput = driver.findElement(By.id("company-description-input"));
+        descriptionInput.clear();
+        descriptionInput.sendKeys("Новая технологическая компания");
+
+        driver.findElement(By.id("save-company-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Данные компании обновлены."));
+        assertTrue(driver.getPageSource().contains("Т-Банк Технологии"));
+        Company updatedCompany = companyDao.findById(companyToEdit.getId()).orElseThrow();
+        assertEquals(updatedCompany.getName(), "Т-Банк Технологии");
+        assertEquals(updatedCompany.getDescription(), "Новая технологическая компания");
+    }
+
+    @Test
+    public void companyCardShouldBlockDeletionWhenReferencedAndDeleteFreeCompany() {
+        Company lockedCompany = persistCompany("ВКонтакте", "IT-компания");
+        Company freeCompany = persistCompany("Яндекс", "Поиск и технологии");
+        Person person = persistPerson(
+                "Иванов Алексей Дмитриевич",
+                "Высшее техническое",
+                true,
+                "Backend-разработчик",
+                "220000.00"
+        );
+        persistWorkExperience(
+                person,
+                lockedCompany,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2021, 1, 1),
+                null
+        );
+
+        driver.get(baseUrl() + "/companies/" + lockedCompany.getId());
+        driver.findElement(By.id("delete-company-button")).click();
+
+        assertTrue(
+                driver.getPageSource().contains(
+                        "Компания не может быть удалена, потому что на неё ссылается история работы кандидатов."
+                )
+        );
+        assertTrue(companyDao.findById(lockedCompany.getId()).isPresent());
+
+        driver.get(baseUrl() + "/companies/" + freeCompany.getId());
+        driver.findElement(By.id("delete-company-button")).click();
+
+        assertTrue(driver.getCurrentUrl().endsWith("/companies"));
+        assertTrue(driver.getPageSource().contains("Компания удалена."));
+        assertTrue(companyDao.findById(freeCompany.getId()).isEmpty());
+    }
+
+    @Test
+    public void vacancyLifecycleShouldValidateCreateCloseReopenAndDelete() {
+        Company company = persistCompany("VK", "Социальная сеть");
+
+        driver.get(baseUrl() + "/companies/" + company.getId() + "/vacancies/new");
+        driver.findElement(By.id("save-vacancy-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Форма содержит ошибки"));
+        assertTrue(driver.getPageSource().contains("Укажите должность."));
+        assertTrue(driver.getPageSource().contains("Укажите зарплату."));
+
+        driver.findElement(By.id("vacancy-position-input")).sendKeys("Java-разработчик");
+        driver.findElement(By.id("vacancy-salary-input")).sendKeys("250000");
+        driver.findElement(By.id("vacancy-education-input")).sendKeys("Высшее техническое");
+        driver.findElement(By.id("save-vacancy-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Вакансия успешно добавлена."));
+        assertTrue(driver.getPageSource().contains("Java-разработчик"));
+        assertTrue(driver.getPageSource().contains("Открыта"));
+
+        Vacancy createdVacancy = vacancyDao.findAllOrderById().get(0);
+
+        driver.findElement(By.id("close-vacancy-button")).click();
+        assertTrue(driver.getPageSource().contains("Вакансия закрыта."));
+        assertTrue(driver.getPageSource().contains("Закрыта"));
+
+        driver.findElement(By.id("reopen-vacancy-button")).click();
+        assertTrue(driver.getPageSource().contains("Вакансия снова открыта."));
+        assertTrue(driver.getPageSource().contains("Открыта"));
+
+        driver.findElement(By.id("delete-vacancy-button")).click();
+        assertTrue(driver.getCurrentUrl().endsWith("/companies/" + company.getId()));
+        assertTrue(driver.getPageSource().contains("Вакансия удалена."));
+        assertTrue(vacancyDao.findById(createdVacancy.getId()).isEmpty());
+    }
+
+    @Test
+    public void workExperienceFormsShouldValidateOverlapUpdateAndDelete() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        Company firstCompany = persistCompany("VK", "Социальная сеть");
+        Company secondCompany = persistCompany("Яндекс", "Технологии");
+        persistWorkExperience(
+                person,
+                firstCompany,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31)
+        );
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/new");
+        driver.findElement(By.id("save-work-experience-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Форма содержит ошибки"));
+        assertTrue(driver.getPageSource().contains("Укажите компанию."));
+        assertTrue(driver.getPageSource().contains("Укажите должность."));
+        assertTrue(driver.getPageSource().contains("Укажите зарплату."));
+        assertTrue(driver.getPageSource().contains("Укажите дату начала."));
+
+        new Select(driver.findElement(By.id("work-company-input"))).selectByVisibleText("Яндекс");
+        driver.findElement(By.id("work-position-input")).sendKeys("Системный аналитик");
+        driver.findElement(By.id("work-salary-input")).sendKeys("190000");
+        driver.findElement(By.id("work-start-input")).sendKeys("2020-06-01");
+        driver.findElement(By.id("work-end-input")).sendKeys("2020-11-30");
+        driver.findElement(By.id("save-work-experience-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Период работы пересекается с другой записью этого человека."));
+
+        WebElement startDateInput = driver.findElement(By.id("work-start-input"));
+        startDateInput.clear();
+        startDateInput.sendKeys("2021-02-01");
+
+        WebElement endDateInput = driver.findElement(By.id("work-end-input"));
+        endDateInput.clear();
+        endDateInput.sendKeys("2021-12-31");
+        driver.findElement(By.id("save-work-experience-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Запись о работе успешно добавлена."));
+        assertTrue(driver.getPageSource().contains("Системный аналитик"));
+
+        WorkExperience createdWorkExperience = workExperienceDao.findByPersonIdOrderByStartDateDesc(person.getId())
+                .stream()
+                .filter(workExperience -> "Системный аналитик".equals(workExperience.getPosition()))
+                .findFirst()
+                .orElseThrow();
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/" + createdWorkExperience.getId() + "/edit");
+
+        WebElement positionInput = driver.findElement(By.id("work-position-input"));
+        positionInput.clear();
+        positionInput.sendKeys("Ведущий аналитик");
+        driver.findElement(By.id("save-work-experience-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Запись о работе обновлена."));
+        assertTrue(driver.getPageSource().contains("Ведущий аналитик"));
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/" + createdWorkExperience.getId() + "/edit");
+        driver.findElement(By.id("delete-work-experience-button")).click();
+
+        assertTrue(driver.getPageSource().contains("Запись о работе удалена."));
+        assertTrue(
+                workExperienceDao.findByPersonIdOrderByStartDateDesc(person.getId())
+                        .stream()
+                        .noneMatch(workExperience -> workExperience.getId().equals(createdWorkExperience.getId()))
+        );
+    }
+
+    @Test
     public void createPersonShouldRejectInvalidEducationOnDirectPost() throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl() + "/people"))
@@ -438,5 +628,26 @@ public class PersonSystemTests extends AbstractTestNGSpringContextTests {
 
         managedPerson.addWorkExperience(workExperience);
         personDao.update(managedPerson);
+    }
+
+    private WorkExperience persistWorkExperience(
+            Person person,
+            Company company,
+            String position,
+            String salary,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        Person managedPerson = personDao.findById(person.getId()).orElseThrow();
+        Company managedCompany = companyDao.findById(company.getId()).orElseThrow();
+
+        WorkExperience workExperience = new WorkExperience();
+        workExperience.setPerson(managedPerson);
+        workExperience.setCompany(managedCompany);
+        workExperience.setPosition(position);
+        workExperience.setSalary(new BigDecimal(salary));
+        workExperience.setStartDate(startDate);
+        workExperience.setEndDate(endDate);
+        return workExperienceDao.save(workExperience);
     }
 }

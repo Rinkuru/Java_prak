@@ -10,12 +10,10 @@
         <div>
             <p class="eyebrow">Карточка вакансии</p>
             <h1 id="vacancy-card-title" th:text="${vacancy.position}">Вакансия</h1>
-            <p class="muted-text">Карточка показывает требования вакансии, компанию и переход к поиску подходящих резюме.</p>
+            <p class="muted-text">Карточка вакансии показывает основную информацию о позиции и компании.</p>
         </div>
         <div class="page-actions">
             <a class="button secondary" id="vacancy-company-link" th:href="@{/companies/{id}(id=${vacancy.company.id})}">К компании</a>
-            <a class="button secondary" id="edit-vacancy-link" th:href="@{/vacancies/{id}/edit(id=${vacancy.id})}">Редактировать</a>
-            <a class="button primary" id="vacancy-matches-link" th:href="@{/vacancies/{id}/matches(id=${vacancy.id})}">Подобрать резюме</a>
         </div>
     </section>
 
@@ -66,12 +64,23 @@
     </section>
 
     <section class="panel">
-        <h2>Запланированные действия</h2>
+        <h2>Дополнительные действия</h2>
         <div class="hero-actions">
-            <button class="button secondary" disabled type="button">Закрытие будет добавлено следующим этапом</button>
-            <button class="button secondary" disabled type="button">Переоткрытие будет добавлено следующим этапом</button>
-            <button class="button danger" disabled type="button">Удаление будет добавлено следующим этапом</button>
+            <a class="button secondary" id="edit-vacancy-link" th:href="@{/vacancies/{id}/edit(id=${vacancy.id})}">Редактировать</a>
+            <a class="button secondary" id="vacancy-matches-link" th:href="@{/vacancies/{id}/matches(id=${vacancy.id})}">Подобрать резюме</a>
+            <form class="inline-form" method="post" th:action="@{/vacancies/{id}/close(id=${vacancy.id})}" th:if="${vacancy.status}">
+                <button class="button secondary" id="close-vacancy-button" type="submit">Закрыть вакансию</button>
+            </form>
+            <form class="inline-form" method="post" th:action="@{/vacancies/{id}/reopen(id=${vacancy.id})}" th:if="${!vacancy.status}">
+                <button class="button secondary" id="reopen-vacancy-button" type="submit">Переоткрыть вакансию</button>
+            </form>
+            <form class="inline-form" method="post" th:action="@{/vacancies/{id}/delete(id=${vacancy.id})}">
+                <button class="button danger" id="delete-vacancy-button" type="submit">Удалить вакансию</button>
+            </form>
         </div>
+        <p class="muted-text top-gap">
+            На карточке можно менять данные вакансии, закрывать или переоткрывать её и удалять без перехода в другой раздел.
+        </p>
     </section>
 </main>
 </body>
