@@ -537,6 +537,124 @@ public class PersonSystemTests extends AbstractTestNGSpringContextTests {
     }
 
     @Test
+    public void personMatchesShouldValidateQueryParamsAndExplainIncompleteCriteria() {
+        Person person = persistPerson(
+                "Крылов Артем Сергеевич",
+                "Высшее техническое",
+                true,
+                null,
+                null
+        );
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/matches?onlyActive=oops&sort=sideways");
+
+        assertTrue(driver.getPageSource().contains("Передано некорректное значение фильтра показа только открытых вакансий."));
+        assertTrue(driver.getPageSource().contains("Передан некорректный параметр сортировки."));
+        assertTrue(
+                driver.getPageSource().contains(
+                        "Для содержательного подбора у человека должны быть заполнены желаемая должность и желаемая зарплата."
+                )
+        );
+        assertFalse(driver.getPageSource().contains("Подходящих вакансий по текущим условиям не найдено."));
+    }
+
+    @Test
+    public void personMatchesShouldRespectOnlyActiveSortAndBlankEducationState() {
+        Person person = persistPerson(
+                "Смирнов Андрей Викторович",
+                "",
+                true,
+                "Java-разработчик",
+                "200000.00"
+        );
+        Company openCompany = persistCompany("Открытая компания", "Открытая вакансия");
+        Company closedCompany = persistCompany("Закрытая компания", "Закрытая вакансия");
+
+        persistVacancy(openCompany, "Java-разработчик", "300000.00", true, "Высшее техническое");
+        persistVacancy(closedCompany, "Java-разработчик", "240000.00", false, "Высшее медицинское");
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/matches");
+
+        assertTrue(
+                driver.getPageSource().contains(
+                        "У человека не заполнено образование, поэтому фильтр по образованию не применялся."
+                )
+        );
+        assertTrue(driver.getPageSource().contains("Открытая компания"));
+        assertFalse(driver.getPageSource().contains("Закрытая компания"));
+
+        driver.get(baseUrl() + "/people/" + person.getId() + "/matches?onlyActive=false&sort=asc");
+
+        assertTrue(driver.getPageSource().contains("Открытая компания"));
+        assertTrue(driver.getPageSource().contains("Закрытая компания"));
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[3]")).getText(),
+                "240000.00"
+        );
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[2]/td[3]")).getText(),
+                "300000.00"
+        );
+    }
+
+    @Test
+    public void vacancyMatchesShouldHandleClosedVacancyBlankEducationFiltersAndSorting() {
+        Company company = persistCompany("T-Банк", "Финтех");
+        Vacancy vacancy = persistVacancy(company, "Аналитик", "210000.00", false, "");
+        persistPerson(
+                "Соколова Мария Андреевна",
+                "Высшее экономическое",
+                true,
+                "Аналитик",
+                "180000.00"
+        );
+        persistPerson(
+                "Петров Кирилл Олегович",
+                "Высшее техническое",
+                false,
+                "Аналитик",
+                "170000.00"
+        );
+        persistPerson(
+                "Иванова Елена Сергеевна",
+                "Высшее экономическое",
+                true,
+                "Аналитик",
+                "230000.00"
+        );
+
+        driver.get(baseUrl() + "/vacancies/" + vacancy.getId() + "/matches?onlyLookingForJob=wrong&sort=bad");
+
+        assertTrue(
+                driver.getPageSource().contains(
+                        "Передано некорректное значение фильтра показа только людей, которые ищут работу."
+                )
+        );
+        assertTrue(driver.getPageSource().contains("Передан некорректный параметр сортировки."));
+        assertTrue(driver.getPageSource().contains("Подбор выполняется для закрытой вакансии."));
+        assertTrue(
+                driver.getPageSource().contains(
+                        "У вакансии не заполнено требование к образованию, поэтому фильтр по образованию не применялся."
+                )
+        );
+        assertTrue(driver.getPageSource().contains("Соколова Мария Андреевна"));
+        assertFalse(driver.getPageSource().contains("Петров Кирилл Олегович"));
+
+        driver.get(baseUrl() + "/vacancies/" + vacancy.getId() + "/matches?onlyLookingForJob=false&sort=desc");
+
+        assertTrue(driver.getPageSource().contains("Соколова Мария Андреевна"));
+        assertTrue(driver.getPageSource().contains("Петров Кирилл Олегович"));
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[5]")).getText(),
+                "180000.00"
+        );
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[2]/td[5]")).getText(),
+                "170000.00"
+        );
+    }
+
+    @Test
     public void unexpectedErrorsShouldRenderFriendlyPage() throws Exception {
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl() + "/test/fail"))

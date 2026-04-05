@@ -74,12 +74,11 @@
             <span class="table-counter" th:text="'Найдено: ' + ${vacancies.size()}">Найдено: 0</span>
         </div>
 
-        <div class="info-box"
-             th:if="${(person.desiredPosition == null or person.desiredPosition.isBlank()) or person.desiredSalary == null}">
-            Для содержательного подбора у человека должны быть заполнены желаемая должность и желаемая зарплата.
+        <div class="info-box top-gap" th:each="infoMessage : ${infoMessages}" th:text="${infoMessage}">
+            Информационное сообщение
         </div>
 
-        <div class="empty-state" th:if="${vacancies.isEmpty()}">
+        <div class="empty-state" th:if="${showEmptyState}">
             Подходящих вакансий по текущим условиям не найдено.
         </div>
 
@@ -123,7 +122,11 @@
             <span class="table-counter" th:text="'Найдено: ' + ${people.size()}">Найдено: 0</span>
         </div>
 
-        <div class="empty-state" th:if="${people.isEmpty()}">
+        <div class="info-box top-gap" th:each="infoMessage : ${infoMessages}" th:text="${infoMessage}">
+            Информационное сообщение
+        </div>
+
+        <div class="empty-state" th:if="${showEmptyState}">
             Подходящих резюме по текущим условиям не найдено.
         </div>
 
