@@ -95,6 +95,8 @@
 В `build.gradle` подключены зависимости для Spring Data JPA, PostgreSQL, H2 и TestNG.  
 Тестовая задача Gradle настроена на `useTestNG()`.
 
+Для запуска `ant -f sql/build.xml`
+
 Файл `sql/build.xml` дополнен задачами приложения:
 
 - `app-clean` — очистка сборки;

@@ -24,15 +24,15 @@
 
     <target name="help" description="Список доступных задач">
         <echo>Доступные задачи:</echo>
-        <echo>  ant -f sql/build.xml compile         — собрать основной код проекта через Gradle classes</echo>
-        <echo>  ant -f sql/build.xml test-compile    — собрать тестовый код проекта через Gradle testClasses</echo>
-        <echo>  ant -f sql/build.xml test            — выполнить весь тестовый пакет на H2 без Docker PostgreSQL</echo>
-        <echo>  ant -f sql/build.xml build           — собрать runnable Spring Boot jar через Gradle bootJar</echo>
-        <echo>  ant -f sql/build.xml deploy          — поднять PostgreSQL в Docker, собрать jar и запустить приложение</echo>
-        <echo>  ant -f sql/build.xml status          — показать состояние запущенного приложения и хвост лога</echo>
-        <echo>  ant -f sql/build.xml undeploy        — остановить запущенное приложение</echo>
-        <echo>  ant -f sql/build.xml full-run        — основной полный прогон: clean + test + deploy</echo>
-        <echo>  ant -f sql/build.xml full-reset-run  — полный прогон с пересозданием PostgreSQL: clean + reset DB + test + start</echo>
+        <echo>  ant compile         — собрать основной код проекта через Gradle classes</echo>
+        <echo>  ant test-compile    — собрать тестовый код проекта через Gradle testClasses</echo>
+        <echo>  ant test            — выполнить весь тестовый пакет на H2 без Docker PostgreSQL</echo>
+        <echo>  ant build           — собрать runnable Spring Boot jar через Gradle bootJar</echo>
+        <echo>  ant deploy          — поднять PostgreSQL в Docker, собрать jar и запустить приложение</echo>
+        <echo>  ant status          — показать состояние запущенного приложения и хвост лога</echo>
+        <echo>  ant undeploy        — остановить запущенное приложение</echo>
+        <echo>  ant full-run        — основной полный прогон: clean + test + deploy</echo>
+        <echo>  ant full-reset-run  — полный прогон с пересозданием PostgreSQL: clean + reset DB + test + start</echo>
         <echo>  ant docker-up           — запустить PostgreSQL в Docker Compose</echo>
         <echo>  ant docker-stop         — остановить контейнер PostgreSQL без удаления</echo>
         <echo>  ant docker-down         — остановить и удалить контейнеры Docker Compose</echo>
