@@ -68,6 +68,11 @@
         <div class="hero-actions">
             <a class="button secondary" id="edit-vacancy-link" th:href="@{/vacancies/{id}/edit(id=${vacancy.id})}">Редактировать</a>
             <a class="button secondary" id="vacancy-matches-link" th:href="@{/vacancies/{id}/matches(id=${vacancy.id})}">Подобрать резюме</a>
+            <a class="button secondary"
+               id="vacancy-same-position-link"
+               th:href="@{/companies/{id}(id=${vacancy.company.id}, position=${vacancy.position})}">
+                Найти вакансии по этой должности
+            </a>
             <form class="inline-form" method="post" th:action="@{/vacancies/{id}/close(id=${vacancy.id})}" th:if="${vacancy.status}">
                 <button class="button secondary" id="close-vacancy-button" type="submit">Закрыть вакансию</button>
             </form>

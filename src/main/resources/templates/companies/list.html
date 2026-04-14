@@ -20,10 +20,25 @@
 
     <section class="panel">
         <h2>Фильтры</h2>
-        <form class="filters-grid filters-grid-compact" method="get" th:action="@{/companies}">
+        <form class="filters-grid" method="get" th:action="@{/companies}">
             <label>
                 <span>Название</span>
                 <input id="company-name-filter" name="name" th:value="${filterName}" type="text">
+            </label>
+
+            <label>
+                <span>Должность вакансии</span>
+                <input id="company-position-filter" name="position" th:value="${filterPosition}" type="text">
+            </label>
+
+            <label>
+                <span>Зарплата от</span>
+                <input id="company-min-salary-filter" name="minSalary" step="10000" th:value="${filterMinSalary}" type="number">
+            </label>
+
+            <label>
+                <span>Зарплата до</span>
+                <input id="company-max-salary-filter" name="maxSalary" step="10000" th:value="${filterMaxSalary}" type="number">
             </label>
 
             <label class="checkbox-line checkbox-card">
@@ -44,7 +59,11 @@
             <span class="table-counter" th:text="'Найдено: ' + ${companyItems.size()}">Найдено: 0</span>
         </div>
 
-        <div class="empty-state" th:if="${companyItems.isEmpty()}">
+        <div class="info-box" th:if="${hasVacancyFilters and !hasFilterError}">
+            Показаны компании, в которых есть вакансии по текущим условиям. Чтобы увидеть сами вакансии, откройте карточку компании.
+        </div>
+
+        <div class="empty-state" th:if="${!hasFilterError and companyItems.isEmpty()}">
             Компании по текущим фильтрам не найдены.
         </div>
 

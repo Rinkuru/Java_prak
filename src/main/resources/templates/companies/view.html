@@ -51,16 +51,57 @@
     </section>
 
     <section class="panel">
+        <h2>Фильтры вакансий</h2>
+        <form class="filters-grid filters-grid-compact" method="get" th:action="@{/companies/{id}(id=${company.id})}">
+            <label>
+                <span>Должность</span>
+                <input id="vacancy-position-filter" name="position" th:value="${filterPosition}" type="text">
+            </label>
+
+            <label>
+                <span>Зарплата от</span>
+                <input id="vacancy-min-salary-filter" name="minSalary" step="10000" th:value="${filterMinSalary}" type="number">
+            </label>
+
+            <label>
+                <span>Зарплата до</span>
+                <input id="vacancy-max-salary-filter" name="maxSalary" step="10000" th:value="${filterMaxSalary}" type="number">
+            </label>
+
+            <label class="checkbox-line checkbox-card">
+                <input id="vacancy-only-active-filter" name="onlyActive" th:checked="${filterOnlyActive}" type="checkbox" value="true">
+                <span>Только открытые вакансии</span>
+            </label>
+
+            <div class="filters-actions">
+                <button class="button primary" id="vacancy-filter-submit" type="submit">Применить</button>
+                <a class="button secondary" th:href="@{/companies/{id}(id=${company.id})}">Сбросить</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
         <div class="table-title-row">
             <h2>Вакансии компании</h2>
-            <span class="table-counter" th:text="'Всего: ' + ${company.vacancies.size()}">Всего: 0</span>
+            <span class="table-counter"
+                  th:text="${hasVacancyFilters} ? 'Показано: ' + displayedVacancyCount + ' из ' + totalVacancyCount : 'Всего: ' + totalVacancyCount">
+                Всего: 0
+            </span>
         </div>
 
-        <div class="empty-state" th:if="${#lists.isEmpty(company.vacancies)}">
+        <div class="info-box" th:if="${hasVacancyFilters and !hasFilterError}">
+            Показаны вакансии компании по текущим условиям поиска.
+        </div>
+
+        <div class="empty-state" th:if="${showNoVacanciesState}">
             У компании пока нет вакансий.
         </div>
 
-        <table class="data-table" th:if="${!#lists.isEmpty(company.vacancies)}">
+        <div class="empty-state" th:if="${showNoMatchingVacanciesState}">
+            По текущим фильтрам вакансии не найдены.
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(filteredVacancies)}">
             <thead>
             <tr>
                 <th>Должность</th>
@@ -70,7 +111,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="vacancy : ${company.vacancies}">
+            <tr th:each="vacancy : ${filteredVacancies}">
                 <td th:text="${vacancy.position}">Должность</td>
                 <td th:text="${vacancy.salary}">0</td>
                 <td>

@@ -187,8 +187,8 @@ public class VacancyDaoImpl implements VacancyDao {
             parameters.put("companyNamePart", "%" + normalizedCompanyNamePart + "%");
         }
         if (normalizedPosition != null) {
-            jpql.append(" and vacancy.position = :position");
-            parameters.put("position", normalizedPosition);
+            jpql.append(" and lower(vacancy.position) like lower(:position)");
+            parameters.put("position", "%" + normalizedPosition + "%");
         }
         if (minSalary != null) {
             jpql.append(" and vacancy.salary >= :minSalary");

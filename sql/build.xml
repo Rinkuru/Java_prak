@@ -10,6 +10,10 @@
     <property name="project.root" value="${basedir}/.."/>
     <property name="gradle.wrapper" value="${project.root}/gradlew"/>
     <property name="gradle.user.home" value="${project.root}/.gradle-ant"/>
+    <property name="gradle.no.daemon.arg" value="--no-daemon"/>
+    <property name="script.run.app" value="${project.root}/scripts/run-app.sh"/>
+    <property name="script.stop.app" value="${project.root}/scripts/stop-app.sh"/>
+    <property name="script.status.app" value="${project.root}/scripts/status-app.sh"/>
 
     <!-- Путь к JDBC-драйверу PostgreSQL -->
     <path id="classpath.db">
@@ -20,6 +24,15 @@
 
     <target name="help" description="Список доступных задач">
         <echo>Доступные задачи:</echo>
+        <echo>  ant -f sql/build.xml compile         — собрать основной код проекта через Gradle classes</echo>
+        <echo>  ant -f sql/build.xml test-compile    — собрать тестовый код проекта через Gradle testClasses</echo>
+        <echo>  ant -f sql/build.xml test            — выполнить весь тестовый пакет на H2 без Docker PostgreSQL</echo>
+        <echo>  ant -f sql/build.xml build           — собрать runnable Spring Boot jar через Gradle bootJar</echo>
+        <echo>  ant -f sql/build.xml deploy          — поднять PostgreSQL в Docker, собрать jar и запустить приложение</echo>
+        <echo>  ant -f sql/build.xml status          — показать состояние запущенного приложения и хвост лога</echo>
+        <echo>  ant -f sql/build.xml undeploy        — остановить запущенное приложение</echo>
+        <echo>  ant -f sql/build.xml full-run        — основной полный прогон: clean + test + deploy</echo>
+        <echo>  ant -f sql/build.xml full-reset-run  — полный прогон с пересозданием PostgreSQL: clean + reset DB + test + start</echo>
         <echo>  ant docker-up           — запустить PostgreSQL в Docker Compose</echo>
         <echo>  ant docker-stop         — остановить контейнер PostgreSQL без удаления</echo>
         <echo>  ant docker-down         — остановить и удалить контейнеры Docker Compose</echo>
@@ -41,6 +54,11 @@
         <echo>  ant app-test-build      — собрать тестовый код проекта</echo>
         <echo>  ant app-test            — выполнить все тесты проекта</echo>
         <echo>  ant app-check           — последовательно собрать проект и запустить тесты</echo>
+        <echo></echo>
+        <echo>Подсказки:</echo>
+        <echo>  test запускает тесты на H2 и не требует Docker PostgreSQL.</echo>
+        <echo>  deploy разворачивает локальное runtime-окружение с Docker PostgreSQL и запускает Spring Boot.</echo>
+        <echo>  full-run — рекомендуемая команда для полной проверки и запуска приложения.</echo>
     </target>
 
     <!-- ===================== СБОРКА ПРИЛОЖЕНИЯ ===================== -->
@@ -50,6 +68,7 @@
               dir="${project.root}"
               failonerror="true">
             <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="${gradle.no.daemon.arg}"/>
             <arg value="clean"/>
         </exec>
     </target>
@@ -60,6 +79,7 @@
               dir="${project.root}"
               failonerror="true">
             <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="${gradle.no.daemon.arg}"/>
             <arg value="classes"/>
         </exec>
     </target>
@@ -70,6 +90,7 @@
               dir="${project.root}"
               failonerror="true">
             <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="${gradle.no.daemon.arg}"/>
             <arg value="testClasses"/>
         </exec>
     </target>
@@ -80,6 +101,7 @@
               dir="${project.root}"
               failonerror="true">
             <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="${gradle.no.daemon.arg}"/>
             <arg value="test"/>
         </exec>
     </target>
@@ -88,6 +110,82 @@
             depends="app-build,app-test-build,app-test"
             description="Собрать приложение и выполнить тесты">
         <echo>Проверка проекта завершена успешно.</echo>
+    </target>
+
+    <target name="compile"
+            depends="app-build"
+            description="Собрать основной код проекта через Gradle classes">
+        <echo>Компиляция основного кода завершена.</echo>
+    </target>
+
+    <target name="test-compile"
+            depends="app-test-build"
+            description="Собрать тестовый код проекта через Gradle testClasses">
+        <echo>Компиляция тестового кода завершена.</echo>
+    </target>
+
+    <target name="test"
+            depends="app-test"
+            description="Выполнить весь тестовый пакет через Gradle test">
+        <echo>Все тесты выполнены успешно.</echo>
+    </target>
+
+    <target name="build" description="Собрать runnable Spring Boot jar через Gradle bootJar">
+        <echo>Сборка runnable jar через Gradle...</echo>
+        <exec executable="${gradle.wrapper}"
+              dir="${project.root}"
+              failonerror="true">
+            <env key="GRADLE_USER_HOME" value="${gradle.user.home}"/>
+            <arg value="${gradle.no.daemon.arg}"/>
+            <arg value="bootJar"/>
+        </exec>
+        <echo>Runnable jar собран в build/libs.</echo>
+    </target>
+
+    <target name="-app-start">
+        <echo>Запуск приложения через scripts/run-app.sh...</echo>
+        <exec executable="bash"
+              dir="${project.root}"
+              failonerror="true">
+            <arg value="${script.run.app}"/>
+        </exec>
+    </target>
+
+    <target name="deploy"
+            depends="docker-db-init,build,-app-start"
+            description="Поднять PostgreSQL в Docker, собрать jar и запустить приложение">
+        <echo>Локальное окружение развёрнуто, приложение запущено.</echo>
+    </target>
+
+    <target name="status"
+            description="Показать состояние запущенного приложения и хвост лога">
+        <exec executable="bash"
+              dir="${project.root}"
+              failonerror="true">
+            <arg value="-lc"/>
+            <arg value="${script.status.app} || true"/>
+        </exec>
+    </target>
+
+    <target name="undeploy"
+            description="Остановить запущенное приложение">
+        <exec executable="bash"
+              dir="${project.root}"
+              failonerror="true">
+            <arg value="${script.stop.app}"/>
+        </exec>
+    </target>
+
+    <target name="full-run"
+            depends="app-clean,test,deploy"
+            description="Полный прогон: clean + test + deploy">
+        <echo>Полный прогон завершён: тесты выполнены, приложение развёрнуто.</echo>
+    </target>
+
+    <target name="full-reset-run"
+            depends="app-clean,docker-db-reset,test,build,-app-start"
+            description="Полный прогон с пересозданием PostgreSQL: clean + reset DB + test + start">
+        <echo>Полный прогон с пересозданием PostgreSQL завершён.</echo>
     </target>
 
     <!-- ===================== DOCKER COMPOSE ===================== -->
