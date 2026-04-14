@@ -38,7 +38,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people");
+        openPeopleListPage();
 
         selectById("filter-education").selectByVisibleText("Высшее техническое");
         element("filter-submit").click();
@@ -94,7 +94,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
         );
         addWorkExperience(wrongPosition, vk, "Системный аналитик");
 
-        driver.get(baseUrl() + "/people");
+        openPeopleListPage();
 
         selectById("filter-education").selectByVisibleText("Высшее техническое");
         selectById("filter-status").selectByValue("true");
@@ -126,7 +126,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 "220000.00"
         );
 
-        driver.get(baseUrl() + "/people");
+        openPeopleListPage();
 
         clearAndType("filter-min-salary", "300000");
         clearAndType("filter-max-salary", "200000");
@@ -141,7 +141,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
 
     @Test
     public void createPersonShouldShowValidationErrors() {
-        driver.get(baseUrl() + "/people/new");
+        openPersonCreateFormThroughList();
 
         selectById("status-input").selectByValue("true");
         element("save-person-button").click();
@@ -154,7 +154,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
 
     @Test
     public void createPersonShouldRejectNegativeSalaryAndTooLongFields() {
-        driver.get(baseUrl() + "/people/new");
+        openPersonCreateFormThroughList();
 
         clearAndType("fullName-input", "А".repeat(256));
         clearAndType("homeAddress-input", "Б".repeat(501));
@@ -172,7 +172,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
 
     @Test
     public void createPersonShouldSaveValidPerson() {
-        driver.get(baseUrl() + "/people/new");
+        openPersonCreateFormThroughList();
 
         clearAndType("fullName-input", "Сидоров Максим Игоревич");
         clearAndType("homeAddress-input", "Москва, Ленинские горы, 1");
@@ -198,7 +198,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/edit");
+        openPersonEditFormThroughCard(person.getId());
 
         clearAndType("homeAddress-input", "Москва, новый адрес");
         selectById("education-input").selectByVisibleText("Высшее");
@@ -228,7 +228,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId());
+        openPersonCardThroughList(person.getId());
         element("delete-person-button").click();
 
         assertTrue(driver.getCurrentUrl().contains("/people"));
@@ -246,10 +246,10 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people/new");
+        openPersonCreateFormThroughList();
         assertEducationOptions(new Select(element("education-input")));
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/edit");
+        openPersonEditFormThroughCard(person.getId());
         Select educationSelect = new Select(element("education-input"));
         assertEducationOptions(educationSelect);
         assertEquals(educationSelect.getFirstSelectedOption().getText(), "Высшее техническое");
@@ -265,7 +265,7 @@ public class PeopleSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/edit");
+        openPersonEditFormThroughCard(person.getId());
 
         Select educationSelect = new Select(element("education-input"));
         assertEducationOptions(educationSelect);

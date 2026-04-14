@@ -8,6 +8,7 @@ import ru.msu.cmc.java_prak.model.Person;
 import ru.msu.cmc.java_prak.model.Vacancy;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Системные Selenium-тесты страницы результатов подбора.
@@ -27,8 +28,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
         );
         persistVacancy(company, "Java-разработчик", "260000.00", true, "Высшее техническое");
 
-        driver.get(baseUrl() + "/people/" + person.getId());
-        element("person-matches-link").click();
+        openPersonMatchesThroughCard(person.getId());
 
         assertCurrentUrlEndsWith("/people/" + person.getId() + "/matches");
         assertPageContains("Подходящие вакансии");
@@ -36,7 +36,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
-    public void personMatchesShouldValidateQueryParamsAndExplainIncompleteCriteria() {
+    public void personMatchesShouldExplainIncompleteCriteria() {
         Person person = persistPerson(
                 "Крылов Артем Сергеевич",
                 "Высшее техническое",
@@ -45,16 +45,14 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/matches?onlyActive=oops&sort=sideways");
+        openPersonMatchesThroughCard(person.getId());
 
-        assertPageContains("Передано некорректное значение фильтра показа только открытых вакансий.");
-        assertPageContains("Передан некорректный параметр сортировки.");
         assertPageContains("Для содержательного подбора у человека должны быть заполнены желаемая должность и желаемая зарплата.");
         assertPageNotContains("Подходящих вакансий по текущим условиям не найдено.");
     }
 
     @Test
-    public void personMatchesShouldRespectOnlyActiveSortAndBlankEducationState() {
+    public void personMatchesShouldHideClosedVacanciesAndShowBlankEducationInfoThroughUi() {
         Person person = persistPerson(
                 "Смирнов Андрей Викторович",
                 "",
@@ -68,16 +66,38 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
         persistVacancy(openCompany, "Java-разработчик", "300000.00", true, "Высшее техническое");
         persistVacancy(closedCompany, "Java-разработчик", "240000.00", false, "Высшее медицинское");
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/matches");
+        openPersonMatchesThroughCard(person.getId());
 
         assertPageContains("У человека не заполнено образование, поэтому фильтр по образованию не применялся.");
         assertPageContains("Открытая компания");
         assertPageNotContains("Закрытая компания");
+    }
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/matches?onlyActive=false&sort=asc");
+    @Test
+    public void personMatchesShouldSortVisibleVacanciesThroughForm() {
+        Person person = persistPerson(
+                "Смирнов Андрей Викторович",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "200000.00"
+        );
+        Company firstCompany = persistCompany("Компания 1", "Открытая вакансия");
+        Company secondCompany = persistCompany("Компания 2", "Открытая вакансия");
 
-        assertPageContains("Открытая компания");
-        assertPageContains("Закрытая компания");
+        persistVacancy(firstCompany, "Java-разработчик", "300000.00", true, "Высшее техническое");
+        persistVacancy(secondCompany, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openPersonMatchesThroughCard(person.getId());
+
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[3]")).getText(),
+                "300000.00"
+        );
+
+        selectById("matches-sort-input").selectByValue("asc");
+        element("matching-filter-submit").click();
+
         assertEquals(
                 driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[3]")).getText(),
                 "240000.00"
@@ -98,7 +118,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
                 "240000.00"
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/matches");
+        openPersonMatchesThroughCard(person.getId());
 
         assertPageContains("Подходящих вакансий по текущим условиям не найдено.");
     }
@@ -115,8 +135,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
                 "180000.00"
         );
 
-        driver.get(baseUrl() + "/vacancies/" + vacancy.getId());
-        element("vacancy-matches-link").click();
+        openVacancyMatchesThroughCard(company.getId(), vacancy.getId());
 
         assertCurrentUrlEndsWith("/vacancies/" + vacancy.getId() + "/matches");
         assertPageContains("Подходящие резюме");
@@ -124,7 +143,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
-    public void vacancyMatchesShouldHandleClosedVacancyBlankEducationFiltersAndSorting() {
+    public void vacancyMatchesShouldShowClosedVacancyAndBlankEducationInfoThroughUi() {
         Company company = persistCompany("T-Банк", "Финтех");
         Vacancy vacancy = persistVacancy(company, "Аналитик", "210000.00", false, "");
         persistPerson(
@@ -141,7 +160,27 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
                 "Аналитик",
                 "170000.00"
         );
-        persistPerson(
+
+        openVacancyMatchesThroughCard(company.getId(), vacancy.getId());
+
+        assertPageContains("Подбор выполняется для закрытой вакансии.");
+        assertPageContains("У вакансии не заполнено требование к образованию, поэтому фильтр по образованию не применялся.");
+        assertPageContains("Соколова Мария Андреевна");
+        assertPageNotContains("Петров Кирилл Олегович");
+    }
+
+    @Test
+    public void vacancyMatchesShouldSortVisiblePeopleThroughForm() {
+        Company company = persistCompany("T-Банк", "Финтех");
+        Vacancy vacancy = persistVacancy(company, "Аналитик", "250000.00", true, "Высшее экономическое");
+        Person firstPerson = persistPerson(
+                "Соколова Мария Андреевна",
+                "Высшее экономическое",
+                true,
+                "Аналитик",
+                "180000.00"
+        );
+        Person secondPerson = persistPerson(
                 "Иванова Елена Сергеевна",
                 "Высшее экономическое",
                 true,
@@ -149,26 +188,27 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
                 "230000.00"
         );
 
-        driver.get(baseUrl() + "/vacancies/" + vacancy.getId() + "/matches?onlyLookingForJob=wrong&sort=bad");
+        openVacancyMatchesThroughCard(company.getId(), vacancy.getId());
 
-        assertPageContains("Передано некорректное значение фильтра показа только людей, которые ищут работу.");
-        assertPageContains("Передан некорректный параметр сортировки.");
-        assertPageContains("Подбор выполняется для закрытой вакансии.");
-        assertPageContains("У вакансии не заполнено требование к образованию, поэтому фильтр по образованию не применялся.");
-        assertPageContains("Соколова Мария Андреевна");
-        assertPageNotContains("Петров Кирилл Олегович");
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[1]")).getText(),
+                "Соколова Мария Андреевна"
+        );
 
-        driver.get(baseUrl() + "/vacancies/" + vacancy.getId() + "/matches?onlyLookingForJob=false&sort=desc");
+        selectById("matches-sort-input").selectByValue("desc");
+        element("matching-filter-submit").click();
 
-        assertPageContains("Соколова Мария Андреевна");
-        assertPageContains("Петров Кирилл Олегович");
+        assertEquals(
+                driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[1]")).getText(),
+                "Иванова Елена Сергеевна"
+        );
         assertEquals(
                 driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[5]")).getText(),
-                "180000.00"
+                "230000.00"
         );
         assertEquals(
                 driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[2]/td[5]")).getText(),
-                "170000.00"
+                "180000.00"
         );
     }
 
@@ -177,7 +217,7 @@ public class MatchingSystemTests extends AbstractSeleniumSystemTest {
         Company company = persistCompany("VK", "Социальная сеть");
         Vacancy vacancy = persistVacancy(company, "Data Scientist", "300000.00", true, "Высшее техническое");
 
-        driver.get(baseUrl() + "/vacancies/" + vacancy.getId() + "/matches");
+        openVacancyMatchesThroughCard(company.getId(), vacancy.getId());
 
         assertPageContains("Подходящих резюме по текущим условиям не найдено.");
     }

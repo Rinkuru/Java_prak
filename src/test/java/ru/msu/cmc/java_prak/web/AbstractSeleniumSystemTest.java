@@ -54,4 +54,81 @@ public abstract class AbstractSeleniumSystemTest extends AbstractWebTestSupport 
     protected void assertPageNotContains(String text) {
         assertFalse(driver.getPageSource().contains(text));
     }
+
+    protected void openHomePage() {
+        driver.get(baseUrl() + "/");
+    }
+
+    protected void openPeopleListPage() {
+        driver.get(baseUrl() + "/people");
+    }
+
+    protected void openCompaniesListPage() {
+        driver.get(baseUrl() + "/companies");
+    }
+
+    protected void openPersonCreateFormThroughList() {
+        openPeopleListPage();
+        element("add-person-link").click();
+    }
+
+    protected void openPersonCardThroughList(Long personId) {
+        openPeopleListPage();
+        element("person-link-" + personId).click();
+    }
+
+    protected void openPersonEditFormThroughCard(Long personId) {
+        openPersonCardThroughList(personId);
+        element("edit-person-link").click();
+    }
+
+    protected void openWorkExperienceCreateFormThroughPersonCard(Long personId) {
+        openPersonCardThroughList(personId);
+        element("add-work-experience-link").click();
+    }
+
+    protected void openWorkExperienceEditFormThroughPersonCard(Long personId, Long workExperienceId) {
+        openPersonCardThroughList(personId);
+        element("edit-work-link-" + workExperienceId).click();
+    }
+
+    protected void openPersonMatchesThroughCard(Long personId) {
+        openPersonCardThroughList(personId);
+        element("person-matches-link").click();
+    }
+
+    protected void openCompanyCreateFormThroughList() {
+        openCompaniesListPage();
+        element("add-company-link").click();
+    }
+
+    protected void openCompanyCardThroughList(Long companyId) {
+        openCompaniesListPage();
+        element("company-link-" + companyId).click();
+    }
+
+    protected void openCompanyEditFormThroughCard(Long companyId) {
+        openCompanyCardThroughList(companyId);
+        element("edit-company-link").click();
+    }
+
+    protected void openVacancyCreateFormThroughCompanyCard(Long companyId) {
+        openCompanyCardThroughList(companyId);
+        element("add-vacancy-link").click();
+    }
+
+    protected void openVacancyCardThroughCompanyCard(Long companyId, Long vacancyId) {
+        openCompanyCardThroughList(companyId);
+        element("vacancy-link-" + vacancyId).click();
+    }
+
+    protected void openVacancyEditFormThroughCard(Long companyId, Long vacancyId) {
+        openVacancyCardThroughCompanyCard(companyId, vacancyId);
+        element("edit-vacancy-link").click();
+    }
+
+    protected void openVacancyMatchesThroughCard(Long companyId, Long vacancyId) {
+        openVacancyCardThroughCompanyCard(companyId, vacancyId);
+        element("vacancy-matches-link").click();
+    }
 }

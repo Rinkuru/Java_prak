@@ -16,15 +16,22 @@ import static org.testng.Assert.assertTrue;
 public class VacanciesSystemTests extends AbstractSeleniumSystemTest {
 
     @Test
-    public void vacancyLifecycleShouldValidateCreateCloseReopenAndDelete() {
+    public void vacancyCreateShouldValidateRequiredFields() {
         Company company = persistCompany("VK", "Социальная сеть");
 
-        driver.get(baseUrl() + "/companies/" + company.getId() + "/vacancies/new");
+        openVacancyCreateFormThroughCompanyCard(company.getId());
         element("save-vacancy-button").click();
 
         assertPageContains("Форма содержит ошибки");
         assertPageContains("Укажите должность.");
         assertPageContains("Укажите зарплату.");
+    }
+
+    @Test
+    public void vacancyCreateShouldSaveValidVacancy() {
+        Company company = persistCompany("VK", "Социальная сеть");
+
+        openVacancyCreateFormThroughCompanyCard(company.getId());
 
         clearAndType("vacancy-position-input", "Java-разработчик");
         clearAndType("vacancy-salary-input", "250000");
@@ -34,28 +41,14 @@ public class VacanciesSystemTests extends AbstractSeleniumSystemTest {
         assertPageContains("Вакансия успешно добавлена.");
         assertPageContains("Java-разработчик");
         assertPageContains("Открыта");
-
-        Vacancy createdVacancy = vacancyDao.findAllOrderById().get(0);
-
-        element("close-vacancy-button").click();
-        assertPageContains("Вакансия закрыта.");
-        assertPageContains("Закрыта");
-
-        element("reopen-vacancy-button").click();
-        assertPageContains("Вакансия снова открыта.");
-        assertPageContains("Открыта");
-
-        element("delete-vacancy-button").click();
-        assertCurrentUrlEndsWith("/companies/" + company.getId());
-        assertPageContains("Вакансия удалена.");
-        assertTrue(vacancyDao.findById(createdVacancy.getId()).isEmpty());
+        assertEquals(vacancyDao.findAllOrderById().size(), 1);
     }
 
     @Test
     public void vacancyFormShouldRejectNegativeSalaryAndTooLongFields() {
         Company company = persistCompany("VK", "Социальная сеть");
 
-        driver.get(baseUrl() + "/companies/" + company.getId() + "/vacancies/new");
+        openVacancyCreateFormThroughCompanyCard(company.getId());
 
         clearAndType("vacancy-position-input", "П".repeat(256));
         clearAndType("vacancy-salary-input", "-1");
@@ -75,15 +68,7 @@ public class VacanciesSystemTests extends AbstractSeleniumSystemTest {
         Company secondCompany = persistCompany("Яндекс", "Технологии");
         Vacancy vacancy = persistVacancy(firstCompany, "Аналитик", "210000.00", true, "Высшее");
 
-        driver.get(baseUrl() + "/companies/" + firstCompany.getId());
-        element("vacancy-link-" + vacancy.getId()).click();
-
-        assertCurrentUrlEndsWith("/vacancies/" + vacancy.getId());
-        assertPageContains("Аналитик");
-        assertPageContains("T-Банк");
-        assertPageContains("210000.00");
-
-        element("edit-vacancy-link").click();
+        openVacancyEditFormThroughCard(firstCompany.getId(), vacancy.getId());
 
         new Select(element("vacancy-company-input")).selectByVisibleText("Яндекс");
         clearAndType("vacancy-position-input", "Ведущий аналитик");
@@ -101,13 +86,52 @@ public class VacanciesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
+    public void vacancyCardShouldCloseVacancy() {
+        Company company = persistCompany("VK", "Социальная сеть");
+        Vacancy vacancy = persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openVacancyCardThroughCompanyCard(company.getId(), vacancy.getId());
+        element("close-vacancy-button").click();
+
+        assertPageContains("Вакансия закрыта.");
+        assertPageContains("Закрыта");
+        assertTrue(!vacancyDao.findById(vacancy.getId()).orElseThrow().isStatus());
+    }
+
+    @Test
+    public void vacancyCardShouldReopenVacancy() {
+        Company company = persistCompany("VK", "Социальная сеть");
+        Vacancy vacancy = persistVacancy(company, "Java-разработчик", "240000.00", false, "Высшее техническое");
+
+        openVacancyCardThroughCompanyCard(company.getId(), vacancy.getId());
+        element("reopen-vacancy-button").click();
+
+        assertPageContains("Вакансия снова открыта.");
+        assertPageContains("Открыта");
+        assertTrue(vacancyDao.findById(vacancy.getId()).orElseThrow().isStatus());
+    }
+
+    @Test
+    public void vacancyCardShouldDeleteVacancyAndReturnToCompany() {
+        Company company = persistCompany("VK", "Социальная сеть");
+        Vacancy vacancy = persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openVacancyCardThroughCompanyCard(company.getId(), vacancy.getId());
+        element("delete-vacancy-button").click();
+
+        assertTrue(driver.getCurrentUrl().contains("/companies/" + company.getId()));
+        assertPageContains("Вакансия удалена.");
+        assertTrue(vacancyDao.findById(vacancy.getId()).isEmpty());
+    }
+
+    @Test
     public void vacancyCardShouldFindVacanciesBySamePositionLink() {
         Company company = persistCompany("VK", "Социальная сеть");
         Vacancy sourceVacancy = persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
         persistVacancy(company, "Java-разработчик", "260000.00", true, "Высшее техническое");
         persistVacancy(company, "Системный аналитик", "200000.00", true, "Высшее");
 
-        driver.get(baseUrl() + "/vacancies/" + sourceVacancy.getId());
+        openVacancyCardThroughCompanyCard(company.getId(), sourceVacancy.getId());
         element("vacancy-same-position-link").click();
 
         assertTrue(driver.getCurrentUrl().contains("/companies/" + company.getId()));

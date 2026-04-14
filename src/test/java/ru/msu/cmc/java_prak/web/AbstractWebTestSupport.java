@@ -69,6 +69,14 @@ public abstract class AbstractWebTestSupport extends AbstractTestNGSpringContext
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
     }
 
+    protected HttpResponse<String> getPage(String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl() + path))
+                .GET()
+                .build();
+
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     protected String formData(String... keyValuePairs) {
         StringBuilder body = new StringBuilder();
         for (int i = 0; i < keyValuePairs.length; i += 2) {

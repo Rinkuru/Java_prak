@@ -1,8 +1,6 @@
 package ru.msu.cmc.java_prak.web;
 
 import java.time.LocalDate;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testng.annotations.Test;
 import ru.msu.cmc.java_prak.model.Company;
@@ -27,17 +25,38 @@ public class WorkExperienceSystemTests extends AbstractSeleniumSystemTest {
                 "240000.00"
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId());
+        openPersonCardThroughList(person.getId());
 
         assertPageContains("История работы пока не заполнена.");
-        driver.findElement(By.linkText("Создать первую запись")).click();
+        element("add-work-experience-link").click();
 
         assertCurrentUrlEndsWith("/people/" + person.getId() + "/work-experiences/new");
         assertPageContains("Новая запись о работе");
     }
 
     @Test
-    public void workExperienceFormsShouldValidateOverlapUpdateAndDelete() {
+    public void workExperienceCreateShouldValidateRequiredFields() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        persistCompany("VK", "Социальная сеть");
+
+        openWorkExperienceCreateFormThroughPersonCard(person.getId());
+        element("save-work-experience-button").click();
+
+        assertPageContains("Форма содержит ошибки");
+        assertPageContains("Укажите компанию.");
+        assertPageContains("Укажите должность.");
+        assertPageContains("Укажите зарплату.");
+        assertPageContains("Укажите дату начала.");
+    }
+
+    @Test
+    public void workExperienceCreateShouldRejectOverlappingPeriod() {
         Person person = persistPerson(
                 "Сидоров Максим Игоревич",
                 "Высшее техническое",
@@ -56,14 +75,7 @@ public class WorkExperienceSystemTests extends AbstractSeleniumSystemTest {
                 LocalDate.of(2020, 12, 31)
         );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/new");
-        element("save-work-experience-button").click();
-
-        assertPageContains("Форма содержит ошибки");
-        assertPageContains("Укажите компанию.");
-        assertPageContains("Укажите должность.");
-        assertPageContains("Укажите зарплату.");
-        assertPageContains("Укажите дату начала.");
+        openWorkExperienceCreateFormThroughPersonCard(person.getId());
 
         selectById("work-company-input").selectByVisibleText("Яндекс");
         clearAndType("work-position-input", "Системный аналитик");
@@ -73,41 +85,93 @@ public class WorkExperienceSystemTests extends AbstractSeleniumSystemTest {
         element("save-work-experience-button").click();
 
         assertPageContains("Период работы пересекается с другой записью этого человека.");
+    }
 
+    @Test
+    public void workExperienceCreateShouldSaveValidRecord() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        Company company = persistCompany("Яндекс", "Технологии");
+
+        openWorkExperienceCreateFormThroughPersonCard(person.getId());
+
+        selectById("work-company-input").selectByVisibleText("Яндекс");
+        clearAndType("work-position-input", "Системный аналитик");
+        clearAndType("work-salary-input", "190000");
         clearAndType("work-start-input", "2021-02-01");
         clearAndType("work-end-input", "2021-12-31");
         element("save-work-experience-button").click();
 
         assertPageContains("Запись о работе успешно добавлена.");
         assertPageContains("Системный аналитик");
+        assertPageContains(company.getName());
+    }
 
-        WorkExperience createdWorkExperience = workExperienceDao.findByPersonIdOrderByStartDateDesc(person.getId())
-                .stream()
-                .filter(workExperience -> "Системный аналитик".equals(workExperience.getPosition()))
-                .findFirst()
-                .orElseThrow();
+    @Test
+    public void workExperienceEditShouldUpdateRecord() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        Company company = persistCompany("VK", "Социальная сеть");
+        WorkExperience workExperience = persistWorkExperience(
+                person,
+                company,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31)
+        );
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/" + createdWorkExperience.getId() + "/edit");
+        openWorkExperienceEditFormThroughPersonCard(person.getId(), workExperience.getId());
 
         clearAndType("work-position-input", "Ведущий аналитик");
         element("save-work-experience-button").click();
 
         assertPageContains("Запись о работе обновлена.");
         assertPageContains("Ведущий аналитик");
+    }
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/" + createdWorkExperience.getId() + "/edit");
+    @Test
+    public void workExperienceEditShouldDeleteRecord() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        Company company = persistCompany("VK", "Социальная сеть");
+        WorkExperience workExperience = persistWorkExperience(
+                person,
+                company,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31)
+        );
+
+        openWorkExperienceEditFormThroughPersonCard(person.getId(), workExperience.getId());
         element("delete-work-experience-button").click();
 
         assertPageContains("Запись о работе удалена.");
         assertTrue(
                 workExperienceDao.findByPersonIdOrderByStartDateDesc(person.getId())
                         .stream()
-                        .noneMatch(workExperience -> workExperience.getId().equals(createdWorkExperience.getId()))
+                        .noneMatch(currentWorkExperience -> currentWorkExperience.getId().equals(workExperience.getId()))
         );
     }
 
     @Test
-    public void workExperienceFormsShouldRejectNegativeSalaryAndInvalidDateRange() {
+    public void workExperienceCreateShouldRejectNegativeSalaryAndInvalidDateRange() {
         Person person = persistPerson(
                 "Кузнецов Денис Андреевич",
                 "Высшее техническое",
@@ -115,9 +179,9 @@ public class WorkExperienceSystemTests extends AbstractSeleniumSystemTest {
                 null,
                 null
         );
-        Company company = persistCompany("VK", "Социальная сеть");
+        persistCompany("VK", "Социальная сеть");
 
-        driver.get(baseUrl() + "/people/" + person.getId() + "/work-experiences/new");
+        openWorkExperienceCreateFormThroughPersonCard(person.getId());
 
         selectById("work-company-input").selectByVisibleText("VK");
         clearAndType("work-position-input", "Д".repeat(256));

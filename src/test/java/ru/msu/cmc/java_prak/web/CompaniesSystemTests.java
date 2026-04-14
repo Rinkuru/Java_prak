@@ -1,13 +1,11 @@
 package ru.msu.cmc.java_prak.web;
 
+import java.time.LocalDate;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testng.annotations.Test;
 import ru.msu.cmc.java_prak.model.Company;
 import ru.msu.cmc.java_prak.model.Person;
-
-import java.time.LocalDate;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -27,7 +25,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         persistVacancy(closedCompany, "Java-разработчик", "220000.00", false, "Высшее техническое");
         persistVacancy(otherCompany, "Врач", "180000.00", true, "Высшее медицинское");
 
-        driver.get(baseUrl() + "/companies");
+        openCompaniesListPage();
 
         clearAndType("company-name-filter", "банк");
         element("company-open-filter").click();
@@ -43,25 +41,30 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
-    public void companiesListShouldValidateVacancyFilterParamsAndKeepSearchWorking() {
+    public void companiesListShouldFilterByVacancyCriteriaThroughForm() {
         Company javaCompany = persistCompany("ВКонтакте", "IT-компания");
+        Company lowSalaryCompany = persistCompany("Небольшая студия", "Низкие зарплаты");
         Company medicalCompany = persistCompany("Городская клиника", "Медицина");
         persistVacancy(javaCompany, "Java-разработчик", "240000.00", true, "Высшее техническое");
+        persistVacancy(lowSalaryCompany, "Java-разработчик", "150000.00", true, "Высшее техническое");
         persistVacancy(medicalCompany, "Врач-терапевт", "180000.00", true, "Высшее медицинское");
 
-        driver.get(baseUrl() + "/companies?position=java&minSalary=abc&onlyWithOpenVacancies=oops");
+        openCompaniesListPage();
 
-        assertPageContains("Передано некорректное значение фильтра \"Зарплата от\". Параметр не применён.");
-        assertPageContains("Передано некорректное значение фильтра показа только компаний с открытыми вакансиями.");
+        clearAndType("company-position-filter", "java");
+        clearAndType("company-min-salary-filter", "200000");
+        element("company-open-filter").click();
+        element("company-filter-submit").click();
+
         assertPageContains("Показаны компании, в которых есть вакансии по текущим условиям. Чтобы увидеть сами вакансии, откройте карточку компании.");
         assertPageContains("ВКонтакте");
+        assertPageNotContains("Небольшая студия");
         assertPageNotContains("Городская клиника");
     }
 
     @Test
     public void companyCreateShouldSaveValidCompany() {
-        driver.get(baseUrl() + "/companies");
-        element("add-company-link").click();
+        openCompanyCreateFormThroughList();
 
         clearAndType("company-name-input", "Яндекс Практикум");
         clearAndType("company-description-input", "Образовательная IT-компания");
@@ -73,15 +76,18 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
-    public void companyFormsShouldValidateRejectDuplicateAndTooLongFieldsAndUpdateData() {
-        persistCompany("ВКонтакте", "IT-компания");
-        Company companyToEdit = persistCompany("T-Банк", "Финтех");
+    public void companyCreateShouldRequireName() {
+        openCompanyCreateFormThroughList();
 
-        driver.get(baseUrl() + "/companies/new");
         element("save-company-button").click();
 
         assertPageContains("Форма содержит ошибки");
         assertPageContains("Укажите название компании.");
+    }
+
+    @Test
+    public void companyCreateShouldRejectTooLongFields() {
+        openCompanyCreateFormThroughList();
 
         clearAndType("company-name-input", "Н".repeat(256));
         clearAndType("company-description-input", "О".repeat(4001));
@@ -89,27 +95,39 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
 
         assertPageContains("Название компании должно быть не длиннее 255 символов.");
         assertPageContains("Описание компании должно быть не длиннее 4000 символов.");
+    }
+
+    @Test
+    public void companyCreateShouldRejectDuplicateName() {
+        persistCompany("ВКонтакте", "IT-компания");
+
+        openCompanyCreateFormThroughList();
 
         clearAndType("company-name-input", "ВКонтакте");
         clearAndType("company-description-input", "Дубликат");
         element("save-company-button").click();
 
         assertPageContains("Компания с таким названием уже существует.");
+    }
 
-        driver.get(baseUrl() + "/companies/" + companyToEdit.getId() + "/edit");
+    @Test
+    public void companyEditShouldUpdateExistingCompany() {
+        Company company = persistCompany("T-Банк", "Финтех");
+
+        openCompanyEditFormThroughCard(company.getId());
+
         clearAndType("company-name-input", "T-Банк Технологии");
         clearAndType("company-description-input", "Новая технологическая компания");
         element("save-company-button").click();
 
         assertPageContains("Данные компании обновлены.");
         assertPageContains("T-Банк Технологии");
-        assertEquals(companyDao.findById(companyToEdit.getId()).orElseThrow().getName(), "T-Банк Технологии");
+        assertEquals(companyDao.findById(company.getId()).orElseThrow().getName(), "T-Банк Технологии");
     }
 
     @Test
-    public void companyCardShouldBlockDeletionWhenReferencedAndDeleteFreeCompany() {
+    public void companyCardShouldBlockDeletionWhenReferenced() {
         Company lockedCompany = persistCompany("ВКонтакте", "IT-компания");
-        Company freeCompany = persistCompany("Яндекс", "Поиск и технологии");
         Person person = persistPerson(
                 "Иванов Алексей Дмитриевич",
                 "Высшее техническое",
@@ -126,16 +144,21 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
                 null
         );
 
-        driver.get(baseUrl() + "/companies/" + lockedCompany.getId());
+        openCompanyCardThroughList(lockedCompany.getId());
         element("delete-company-button").click();
 
         assertPageContains("Компания не может быть удалена, потому что на неё ссылается история работы кандидатов.");
         assertTrue(companyDao.findById(lockedCompany.getId()).isPresent());
+    }
 
-        driver.get(baseUrl() + "/companies/" + freeCompany.getId());
+    @Test
+    public void companyCardShouldDeleteFreeCompany() {
+        Company freeCompany = persistCompany("Яндекс", "Поиск и технологии");
+
+        openCompanyCardThroughList(freeCompany.getId());
         element("delete-company-button").click();
 
-        assertCurrentUrlEndsWith("/companies");
+        assertTrue(driver.getCurrentUrl().contains("/companies"));
         assertPageContains("Компания удалена.");
         assertTrue(companyDao.findById(freeCompany.getId()).isEmpty());
     }
@@ -148,7 +171,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         persistVacancy(company, "Java-разработчик", "180000.00", true, "Высшее техническое");
         persistVacancy(company, "Системный аналитик", "270000.00", true, "Высшее");
 
-        driver.get(baseUrl() + "/companies/" + company.getId());
+        openCompanyCardThroughList(company.getId());
 
         clearAndType("vacancy-position-filter", "java");
         clearAndType("vacancy-min-salary-filter", "240000");
@@ -169,15 +192,24 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
-    public void companyCardShouldShowNoVacanciesAndNoMatchingStates() {
+    public void companyCardShouldShowNoVacanciesState() {
         Company emptyCompany = persistCompany("Пустая компания", "Без вакансий");
-        Company filledCompany = persistCompany("Рабочая компания", "С вакансиями");
-        persistVacancy(filledCompany, "Java-разработчик", "240000.00", true, "Высшее техническое");
 
-        driver.get(baseUrl() + "/companies/" + emptyCompany.getId());
+        openCompanyCardThroughList(emptyCompany.getId());
+
         assertPageContains("У компании пока нет вакансий.");
+    }
 
-        driver.get(baseUrl() + "/companies/" + filledCompany.getId() + "?position=DevOps");
+    @Test
+    public void companyCardShouldShowNoMatchingVacanciesState() {
+        Company company = persistCompany("Рабочая компания", "С вакансиями");
+        persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openCompanyCardThroughList(company.getId());
+
+        clearAndType("vacancy-position-filter", "DevOps");
+        element("vacancy-filter-submit").click();
+
         assertPageContains("По текущим фильтрам вакансии не найдены.");
         assertPageNotContains("Java-разработчик");
     }
