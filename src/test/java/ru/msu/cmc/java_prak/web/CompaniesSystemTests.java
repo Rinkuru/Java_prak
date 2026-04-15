@@ -172,6 +172,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         persistVacancy(company, "Системный аналитик", "270000.00", true, "Высшее");
 
         openCompanyCardThroughList(company.getId());
+        assertEquals(driver.findElement(By.className("table-counter")).getText(), "Показано: 4");
 
         clearAndType("vacancy-position-filter", "java");
         clearAndType("vacancy-min-salary-filter", "240000");
@@ -179,6 +180,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         element("vacancy-filter-submit").click();
 
         assertPageContains("Показаны вакансии компании по текущим условиям поиска.");
+        assertEquals(driver.findElement(By.className("table-counter")).getText(), "Показано: 1");
         assertEquals(driver.findElements(By.xpath("//table[@class='data-table']/tbody/tr")).size(), 1);
         assertEquals(
                 driver.findElement(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[1]")).getText(),
@@ -197,6 +199,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
 
         openCompanyCardThroughList(emptyCompany.getId());
 
+        assertEquals(driver.findElement(By.className("table-counter")).getText(), "Показано: 0");
         assertPageContains("У компании пока нет вакансий.");
     }
 
@@ -210,6 +213,7 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         clearAndType("vacancy-position-filter", "DevOps");
         element("vacancy-filter-submit").click();
 
+        assertEquals(driver.findElement(By.className("table-counter")).getText(), "Показано: 0");
         assertPageContains("По текущим фильтрам вакансии не найдены.");
         assertPageNotContains("Java-разработчик");
     }

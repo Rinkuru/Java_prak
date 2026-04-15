@@ -83,9 +83,8 @@
     <section class="panel">
         <div class="table-title-row">
             <h2>Вакансии компании</h2>
-            <span class="table-counter"
-                  th:text="${hasVacancyFilters} ? 'Показано: ' + displayedVacancyCount + ' из ' + totalVacancyCount : 'Всего: ' + totalVacancyCount">
-                Всего: 0
+            <span class="table-counter" th:text="${'Показано: ' + displayedVacancyCount}">
+                Показано: 0
             </span>
         </div>
 
