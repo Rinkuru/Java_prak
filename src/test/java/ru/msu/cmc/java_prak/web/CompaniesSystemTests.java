@@ -63,6 +63,24 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
+    public void companiesListShouldShowValidationErrorWhenSalaryRangeIsInvalid() {
+        Company company = persistCompany("ВКонтакте", "IT-компания");
+        persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openCompaniesListPage();
+
+        clearAndType("company-min-salary-filter", "300000");
+        clearAndType("company-max-salary-filter", "200000");
+        element("company-filter-submit").click();
+
+        assertPageContains("Значение \"Зарплата от\" не может быть больше значения \"Зарплата до\".");
+        assertPageNotContains("Компании по текущим фильтрам не найдены.");
+        assertPageNotContains("ВКонтакте");
+        assertEquals(element("company-min-salary-filter").getAttribute("value"), "300000");
+        assertEquals(element("company-max-salary-filter").getAttribute("value"), "200000");
+    }
+
+    @Test
     public void companyCreateShouldSaveValidCompany() {
         openCompanyCreateFormThroughList();
 
@@ -123,6 +141,46 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
         assertPageContains("Данные компании обновлены.");
         assertPageContains("T-Банк Технологии");
         assertEquals(companyDao.findById(company.getId()).orElseThrow().getName(), "T-Банк Технологии");
+    }
+
+    @Test
+    public void companyEditShouldRejectDuplicateNameAndKeepOriginalData() {
+        persistCompany("VK", "Социальная сеть");
+        Company editableCompany = persistCompany("Яндекс", "Поиск и технологии");
+
+        openCompanyEditFormThroughCard(editableCompany.getId());
+
+        clearAndType("company-name-input", "VK");
+        clearAndType("company-description-input", "Дубликат");
+        element("save-company-button").click();
+
+        assertPageContains("Редактирование компании");
+        assertPageContains("Компания с таким названием уже существует.");
+        assertEquals(element("company-name-input").getAttribute("value"), "VK");
+        assertEquals(companyDao.findById(editableCompany.getId()).orElseThrow().getName(), "Яндекс");
+        assertEquals(
+                companyDao.findById(editableCompany.getId()).orElseThrow().getDescription(),
+                "Поиск и технологии"
+        );
+    }
+
+    @Test
+    public void companyEditShouldRejectBlankAndTooLongValuesAndKeepOriginalData() {
+        Company company = persistCompany("T-Банк", "Финтех");
+
+        openCompanyEditFormThroughCard(company.getId());
+
+        clearAndType("company-name-input", "");
+        clearAndType("company-description-input", "О".repeat(4001));
+        element("save-company-button").click();
+
+        assertPageContains("Редактирование компании");
+        assertPageContains("Форма содержит ошибки");
+        assertPageContains("Укажите название компании.");
+        assertPageContains("Описание компании должно быть не длиннее 4000 символов.");
+        assertEquals(element("company-name-input").getAttribute("value"), "");
+        assertEquals(companyDao.findById(company.getId()).orElseThrow().getName(), "T-Банк");
+        assertEquals(companyDao.findById(company.getId()).orElseThrow().getDescription(), "Финтех");
     }
 
     @Test
@@ -191,6 +249,26 @@ public class CompaniesSystemTests extends AbstractSeleniumSystemTest {
                 "250000.00"
         );
         assertPageNotContains("Системный аналитик");
+    }
+
+    @Test
+    public void companyCardShouldShowValidationErrorWhenVacancySalaryRangeIsInvalid() {
+        Company company = persistCompany("T-Банк", "Финтех");
+        persistVacancy(company, "Java-разработчик", "250000.00", true, "Высшее техническое");
+
+        openCompanyCardThroughList(company.getId());
+
+        clearAndType("vacancy-min-salary-filter", "300000");
+        clearAndType("vacancy-max-salary-filter", "200000");
+        element("vacancy-filter-submit").click();
+
+        assertTrue(driver.getCurrentUrl().contains("/companies/" + company.getId()));
+        assertPageContains(company.getName());
+        assertPageContains("Значение \"Зарплата от\" не может быть больше значения \"Зарплата до\".");
+        assertPageNotContains("По текущим фильтрам вакансии не найдены.");
+        assertPageNotContains("Java-разработчик");
+        assertEquals(element("vacancy-min-salary-filter").getAttribute("value"), "300000");
+        assertEquals(element("vacancy-max-salary-filter").getAttribute("value"), "200000");
     }
 
     @Test

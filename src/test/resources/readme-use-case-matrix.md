@@ -47,6 +47,20 @@
 | 39 Проверить обязательные поля человека | `P-02 -> P-04(create) -> submit` | `PeopleSystemTests.createPersonShouldShowValidationErrors` |
 | 40 Проверить отсутствие пересечений дат в истории работы | `P-02 -> P-03 -> P-05(create) -> submit` | `WorkExperienceSystemTests.workExperienceCreateShouldRejectOverlappingPeriod` |
 
+## Дополнительное Selenium-покрытие пользовательски достижимых UI-ошибок
+
+Эти сценарии не добавляют новых use case из README, но закрывают отдельные пользовательские ветки ошибок и валидации, доступные через обычные элементы интерфейса.
+
+| UI-ветка | Пользовательский маршрут | Тест |
+| --- | --- | --- |
+| Невалидный диапазон зарплаты на списке компаний | `P-06 -> filters` | `CompaniesSystemTests.companiesListShouldShowValidationErrorWhenSalaryRangeIsInvalid` |
+| Невалидный диапазон зарплаты на карточке компании | `P-07 -> vacancy filters` | `CompaniesSystemTests.companyCardShouldShowValidationErrorWhenVacancySalaryRangeIsInvalid` |
+| Дубликат названия при редактировании компании | `P-06 -> P-07 -> P-08(edit) -> submit` | `CompaniesSystemTests.companyEditShouldRejectDuplicateNameAndKeepOriginalData` |
+| Пустое/слишком длинное значение при редактировании компании | `P-06 -> P-07 -> P-08(edit) -> submit` | `CompaniesSystemTests.companyEditShouldRejectBlankAndTooLongValuesAndKeepOriginalData` |
+| Невалидное редактирование вакансии | `P-06 -> P-07 -> P-09 -> P-10(edit) -> submit` | `VacanciesSystemTests.vacancyEditShouldRejectInvalidUpdateAndKeepOriginalData` |
+| Пересечение дат при редактировании записи о работе | `P-02 -> P-03 -> P-05(edit) -> submit` | `WorkExperienceSystemTests.workExperienceEditShouldRejectOverlappingPeriodAndKeepOriginalData` |
+| Полевая валидация при редактировании записи о работе | `P-02 -> P-03 -> P-05(edit) -> submit` | `WorkExperienceSystemTests.workExperienceEditShouldRejectInvalidRangeAndNegativeSalary` |
+
 ## Дополнительные integration/HTTP-тесты для веток вне честного UI-сценария
 
 Эти проверки не считаются системными UI-тестами, потому что пользователь не может честно сгенерировать такие запросы через обычные элементы интерфейса.

@@ -86,6 +86,39 @@ public class VacanciesSystemTests extends AbstractSeleniumSystemTest {
     }
 
     @Test
+    public void vacancyEditShouldRejectInvalidUpdateAndKeepOriginalData() {
+        Company company = persistCompany("VK", "Социальная сеть");
+        Vacancy vacancy = persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");
+
+        openVacancyEditFormThroughCard(company.getId(), vacancy.getId());
+
+        clearAndType("vacancy-position-input", "П".repeat(256));
+        clearAndType("vacancy-salary-input", "-1");
+        clearAndType("vacancy-education-input", "О".repeat(256));
+        clearAndType("vacancy-requirements-input", "Т".repeat(4001));
+        element("save-vacancy-button").click();
+
+        assertPageContains("Редактирование вакансии");
+        assertPageContains("Форма содержит ошибки");
+        assertPageContains("Должность должна быть не длиннее 255 символов.");
+        assertPageContains("Зарплата не может быть отрицательной.");
+        assertPageContains("Требование к образованию должно быть не длиннее 255 символов.");
+        assertPageContains("Требования должны быть не длиннее 4000 символов.");
+        assertEquals(
+                vacancyDao.findById(vacancy.getId()).orElseThrow().getPosition(),
+                "Java-разработчик"
+        );
+        assertEquals(
+                vacancyDao.findById(vacancy.getId()).orElseThrow().getSalary().toPlainString(),
+                "240000.00"
+        );
+        assertEquals(
+                vacancyDao.findById(vacancy.getId()).orElseThrow().getRequiredEducation(),
+                "Высшее техническое"
+        );
+    }
+
+    @Test
     public void vacancyCardShouldCloseVacancy() {
         Company company = persistCompany("VK", "Социальная сеть");
         Vacancy vacancy = persistVacancy(company, "Java-разработчик", "240000.00", true, "Высшее техническое");

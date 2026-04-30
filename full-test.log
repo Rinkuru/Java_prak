@@ -1,0 +1,210 @@
+> Task :compileJava
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources
+> Task :testClasses
+
+> Task :test
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.HibernateConfigurationTests > hibernateConfigurationShouldExistContainMappingsAndBeReadableByHibernate PASSED
+
+
+> Task :test
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.JavaPrakApplicationTests > contextLoads PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > companyDaoShouldFailToDeleteCompanyReferencedByWorkExperience PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > companyDaoShouldHandleMissingRecordsBlankFiltersAndEmptyOpenVacancySearch PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > matchingDaoShouldHandleMissingDataBlankEducationAndBothSortDirections PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > matchingDaoShouldIgnoreBlankPersonEducationWhenSearchingVacancies PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > personDaoShouldHandleMissingRecordsEmptyFiltersAndDescendingSort PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > vacancyDaoShouldHandleMissingRecordsEmptyFiltersAndBlankSearch PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoEdgeCaseTests > workExperienceDaoShouldHandleMissingRecordsAndOpenEndedOverlapCases PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > companyDaoShouldFindByFiltersAndLoadCard PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > companyDaoShouldSaveUpdateFindAndDeleteCompany PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > matchingDaoShouldFindSuitablePersonsForVacancy PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > matchingDaoShouldFindSuitableVacanciesForPerson PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > personDaoShouldLoadCardAndSearchByFilters PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > personDaoShouldSaveUpdateFindAndDeletePerson PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > vacancyDaoShouldFindVacanciesByFilters PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > vacancyDaoShouldSaveUpdateFindDeleteAndChangeStatus PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > workExperienceDaoShouldFindExperienceAndDetectOverlaps PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.dao.DaoTests > workExperienceDaoShouldSaveUpdateFindAndDeleteExperience PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.model.EntityHelperTests > companyHelperMethodsShouldSynchronizeVacancyRelation PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.model.EntityHelperTests > personHelperMethodsShouldSynchronizeWorkExperienceRelation PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.model.EntityMappingTests > shouldPersistCompanyWithVacancy PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.model.EntityMappingTests > shouldPersistPersonWithOrderedWorkExperience PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companiesListShouldFilterByNameAndOpenVacanciesAndOpenCard PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companiesListShouldFilterByVacancyCriteriaThroughForm PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companiesListShouldShowValidationErrorWhenSalaryRangeIsInvalid PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldBlockDeletionWhenReferenced PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldDeleteFreeCompany PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldFilterVacanciesByPositionSalaryAndOnlyActive PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldShowNoMatchingVacanciesState PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldShowNoVacanciesState PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCardShouldShowValidationErrorWhenVacancySalaryRangeIsInvalid PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCreateShouldRejectDuplicateName PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCreateShouldRejectTooLongFields PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCreateShouldRequireName PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyCreateShouldSaveValidCompany PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyEditShouldRejectBlankAndTooLongValuesAndKeepOriginalData PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyEditShouldRejectDuplicateNameAndKeepOriginalData PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.CompaniesSystemTests > companyEditShouldUpdateExistingCompany PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.HomeAndNavigationSystemTests > homePageShouldNavigateToPeopleAndCompaniesSections PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.HomeAndNavigationSystemTests > homePageShouldOpenAddFormsAndHeaderNavigation PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > personCardShouldOpenMatchesPage PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > personMatchesShouldExplainIncompleteCriteria PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > personMatchesShouldHideClosedVacanciesAndShowBlankEducationInfoThroughUi PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > personMatchesShouldShowEmptyStateWhenNoVacanciesMatch PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > personMatchesShouldSortVisibleVacanciesThroughForm PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > vacancyCardShouldOpenMatchesPage PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > vacancyMatchesShouldShowClosedVacancyAndBlankEducationInfoThroughUi PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > vacancyMatchesShouldShowEmptyStateWhenNoPeopleMatch PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.MatchingSystemTests > vacancyMatchesShouldSortVisiblePeopleThroughForm PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > createPersonShouldRejectNegativeSalaryAndTooLongFields PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > createPersonShouldSaveValidPerson PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > createPersonShouldShowValidationErrors PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > editPersonShouldNotSilentlyKeepLegacyInvalidEducation PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > editPersonShouldUpdateExistingPerson PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > peopleListShouldApplyCombinedFiltersAndSortBySalary PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > peopleListShouldFilterByEducationAndOpenPersonCard PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > peopleListShouldShowErrorWhenSalaryRangeIsInvalid PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > personCardShouldDeletePersonAndReturnToList PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.PeopleSystemTests > personFormsShouldRenderReferenceEducationOptions PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCardShouldCloseVacancy PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCardShouldDeleteVacancyAndReturnToCompany PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCardShouldFindVacanciesBySamePositionLink PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCardShouldOpenAndAllowEditingData PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCardShouldReopenVacancy PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCreateShouldSaveValidVacancy PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyCreateShouldValidateRequiredFields PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyEditShouldRejectInvalidUpdateAndKeepOriginalData PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.VacanciesSystemTests > vacancyFormShouldRejectNegativeSalaryAndTooLongFields PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > companiesListShouldReportInvalidVacancyFiltersOnDirectGet PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > companyCardShouldReportInvalidVacancyFiltersOnDirectGet PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > createPersonShouldRejectInvalidEducationOnDirectPost PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > personMatchesShouldAllowClosedVacanciesOnDirectGetWhenExplicitlyRequested PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > personMatchesShouldReportInvalidQueryParamsOnDirectGet PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > unexpectedErrorsShouldRenderFriendlyPageWith500Status PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > vacancyCreateShouldRejectCompanyBindingMismatchOnDirectPost PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > vacancyMatchesShouldAllowPeopleNotLookingForJobOnDirectGetWhenExplicitlyRequested PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WebHttpIntegrationTests > vacancyMatchesShouldReportInvalidQueryParamsOnDirectGet PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > personCardShouldShowEmptyHistoryStateAndOpenCreateForm PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceCreateShouldRejectNegativeSalaryAndInvalidDateRange PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceCreateShouldRejectOverlappingPeriod PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceCreateShouldSaveValidRecord PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceCreateShouldValidateRequiredFields PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceEditShouldDeleteRecord PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceEditShouldRejectInvalidRangeAndNegativeSalary PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceEditShouldRejectOverlappingPeriodAndKeepOriginalData PASSED
+
+Gradle suite > Gradle test > ru.msu.cmc.java_prak.web.WorkExperienceSystemTests > workExperienceEditShouldUpdateRecord PASSED
+
+2026-04-30T03:47:20.100+03:00  INFO 47423 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-30T03:47:20.102+03:00  INFO 47423 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-30T03:47:20.103+03:00  INFO 47423 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-30T03:47:20.105+03:00  INFO 47423 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-30T03:47:20.106+03:00  INFO 47423 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-30T03:47:20.107+03:00  INFO 47423 --- [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-30T03:47:20.610+03:00  INFO 47423 --- [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-04-30T03:47:20.615+03:00  INFO 47423 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-30T03:47:20.615+03:00  INFO 47423 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-04-30T03:47:20.616+03:00  INFO 47423 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+
+> Task :jacocoTestReport
+
+[Incubating] Problems report is available at: file:///home/leonid/prak26/java-prak/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 30s
+6 actionable tasks: 6 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html

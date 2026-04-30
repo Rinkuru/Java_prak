@@ -7,6 +7,7 @@ import ru.msu.cmc.java_prak.model.Company;
 import ru.msu.cmc.java_prak.model.Person;
 import ru.msu.cmc.java_prak.model.WorkExperience;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -138,6 +139,94 @@ public class WorkExperienceSystemTests extends AbstractSeleniumSystemTest {
 
         assertPageContains("Запись о работе обновлена.");
         assertPageContains("Ведущий аналитик");
+    }
+
+    @Test
+    public void workExperienceEditShouldRejectOverlappingPeriodAndKeepOriginalData() {
+        Person person = persistPerson(
+                "Сидоров Максим Игоревич",
+                "Высшее техническое",
+                true,
+                "Java-разработчик",
+                "240000.00"
+        );
+        Company firstCompany = persistCompany("VK", "Социальная сеть");
+        Company secondCompany = persistCompany("Яндекс", "Технологии");
+        persistWorkExperience(
+                person,
+                firstCompany,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31)
+        );
+        WorkExperience editableWorkExperience = persistWorkExperience(
+                person,
+                secondCompany,
+                "Системный аналитик",
+                "190000.00",
+                LocalDate.of(2021, 1, 1),
+                LocalDate.of(2021, 12, 31)
+        );
+
+        openWorkExperienceEditFormThroughPersonCard(person.getId(), editableWorkExperience.getId());
+
+        clearAndType("work-start-input", "2020-06-01");
+        clearAndType("work-end-input", "2020-11-30");
+        element("save-work-experience-button").click();
+
+        assertPageContains("Редактирование записи о работе");
+        assertPageContains("Период работы пересекается с другой записью этого человека.");
+        assertEquals(
+                workExperienceDao.findById(editableWorkExperience.getId()).orElseThrow().getStartDate(),
+                LocalDate.of(2021, 1, 1)
+        );
+        assertEquals(
+                workExperienceDao.findById(editableWorkExperience.getId()).orElseThrow().getEndDate(),
+                LocalDate.of(2021, 12, 31)
+        );
+    }
+
+    @Test
+    public void workExperienceEditShouldRejectInvalidRangeAndNegativeSalary() {
+        Person person = persistPerson(
+                "Кузнецов Денис Андреевич",
+                "Высшее техническое",
+                false,
+                null,
+                null
+        );
+        Company company = persistCompany("VK", "Социальная сеть");
+        WorkExperience workExperience = persistWorkExperience(
+                person,
+                company,
+                "Backend-разработчик",
+                "210000.00",
+                LocalDate.of(2022, 1, 1),
+                LocalDate.of(2022, 12, 31)
+        );
+
+        openWorkExperienceEditFormThroughPersonCard(person.getId(), workExperience.getId());
+
+        clearAndType("work-position-input", "Д".repeat(256));
+        clearAndType("work-salary-input", "-1");
+        clearAndType("work-start-input", "2022-12-31");
+        clearAndType("work-end-input", "2022-01-01");
+        element("save-work-experience-button").click();
+
+        assertPageContains("Редактирование записи о работе");
+        assertPageContains("Форма содержит ошибки");
+        assertPageContains("Должность должна быть не длиннее 255 символов.");
+        assertPageContains("Зарплата не может быть отрицательной.");
+        assertPageContains("Дата окончания не может быть раньше даты начала.");
+        assertEquals(
+                workExperienceDao.findById(workExperience.getId()).orElseThrow().getPosition(),
+                "Backend-разработчик"
+        );
+        assertEquals(
+                workExperienceDao.findById(workExperience.getId()).orElseThrow().getSalary().toPlainString(),
+                "210000.00"
+        );
     }
 
     @Test
