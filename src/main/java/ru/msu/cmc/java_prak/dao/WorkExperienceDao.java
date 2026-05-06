@@ -28,4 +28,6 @@ public interface WorkExperienceDao {
             LocalDate endDate,
             Long excludedWorkExperienceId
     );
+
+    List<String> findPositionSuggestions(String positionPart, int limit);
 }

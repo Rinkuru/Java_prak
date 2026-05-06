@@ -130,9 +130,39 @@ public class WorkExperienceDaoImpl implements WorkExperienceDao {
         return overlapsCount > 0;
     }
 
+    @Override
+    public List<String> findPositionSuggestions(String positionPart, int limit) {
+        String normalizedPositionPart = normalize(positionPart);
+        if (normalizedPositionPart == null || limit <= 0) {
+            return List.of();
+        }
+
+        return entityManager.createQuery(
+                """
+                select workExperience.position
+                from WorkExperience workExperience
+                where lower(workExperience.position) like lower(:positionPart)
+                group by workExperience.position
+                order by lower(workExperience.position) asc, workExperience.position asc
+                """,
+                String.class
+        ).setParameter("positionPart", "%" + normalizedPositionPart + "%")
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
     private List<WorkExperience> executeQuery(String jpql, Map<String, Object> parameters) {
         TypedQuery<WorkExperience> query = entityManager.createQuery(jpql, WorkExperience.class);
         parameters.forEach(query::setParameter);
         return query.getResultList();
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 }

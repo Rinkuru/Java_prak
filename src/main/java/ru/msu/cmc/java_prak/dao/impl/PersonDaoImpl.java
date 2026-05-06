@@ -249,6 +249,49 @@ public class PersonDaoImpl implements PersonDao {
         return executeFetchQuery(jpql.toString(), parameters);
     }
 
+    @Override
+    public List<String> findFullNameSuggestions(String namePart, int limit) {
+        String normalizedNamePart = normalize(namePart);
+        if (normalizedNamePart == null || limit <= 0) {
+            return List.of();
+        }
+
+        return entityManager.createQuery(
+                """
+                select p.fullName
+                from Person p
+                where lower(p.fullName) like lower(:namePart)
+                group by p.fullName
+                order by lower(p.fullName) asc, p.fullName asc
+                """,
+                String.class
+        ).setParameter("namePart", "%" + normalizedNamePart + "%")
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    @Override
+    public List<String> findDesiredPositionSuggestions(String positionPart, int limit) {
+        String normalizedPositionPart = normalize(positionPart);
+        if (normalizedPositionPart == null || limit <= 0) {
+            return List.of();
+        }
+
+        return entityManager.createQuery(
+                """
+                select p.desiredPosition
+                from Person p
+                where p.desiredPosition is not null
+                  and lower(p.desiredPosition) like lower(:positionPart)
+                group by p.desiredPosition
+                order by lower(p.desiredPosition) asc, p.desiredPosition asc
+                """,
+                String.class
+        ).setParameter("positionPart", "%" + normalizedPositionPart + "%")
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
     private List<Person> executeFetchQuery(String jpql, Map<String, Object> parameters) {
         TypedQuery<Person> query = entityManager.createQuery(jpql, Person.class);
         parameters.forEach(query::setParameter);

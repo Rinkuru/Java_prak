@@ -41,4 +41,8 @@ public interface PersonDao {
             String workedPosition,
             boolean orderByDesiredSalaryAsc
     );
+
+    List<String> findFullNameSuggestions(String namePart, int limit);
+
+    List<String> findDesiredPositionSuggestions(String positionPart, int limit);
 }

@@ -207,6 +207,27 @@ public class VacancyDaoImpl implements VacancyDao {
         return executeQuery(jpql.toString(), parameters);
     }
 
+    @Override
+    public List<String> findPositionSuggestions(String positionPart, int limit) {
+        String normalizedPositionPart = normalize(positionPart);
+        if (normalizedPositionPart == null || limit <= 0) {
+            return List.of();
+        }
+
+        return entityManager.createQuery(
+                """
+                select vacancy.position
+                from Vacancy vacancy
+                where lower(vacancy.position) like lower(:positionPart)
+                group by vacancy.position
+                order by lower(vacancy.position) asc, vacancy.position asc
+                """,
+                String.class
+        ).setParameter("positionPart", "%" + normalizedPositionPart + "%")
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
     private List<Vacancy> executeQuery(String jpql, Map<String, Object> parameters) {
         TypedQuery<Vacancy> query = entityManager.createQuery(jpql, Vacancy.class);
         parameters.forEach(query::setParameter);

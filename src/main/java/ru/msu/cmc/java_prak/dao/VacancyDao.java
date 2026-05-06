@@ -40,4 +40,6 @@ public interface VacancyDao {
             BigDecimal maxSalary,
             Boolean status
     );
+
+    List<String> findPositionSuggestions(String positionPart, int limit);
 }

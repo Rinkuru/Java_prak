@@ -26,4 +26,6 @@ public interface CompanyDao {
     List<Company> findWithOpenVacancies();
 
     List<Company> searchCompanies(String namePart, Boolean onlyWithOpenVacancies);
+
+    List<String> findNameSuggestions(String namePart, int limit);
 }

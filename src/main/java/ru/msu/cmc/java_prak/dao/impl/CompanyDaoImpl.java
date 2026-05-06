@@ -156,6 +156,27 @@ public class CompanyDaoImpl implements CompanyDao {
         return executeQuery(jpql.toString(), parameters);
     }
 
+    @Override
+    public List<String> findNameSuggestions(String namePart, int limit) {
+        String normalizedNamePart = normalize(namePart);
+        if (normalizedNamePart == null || limit <= 0) {
+            return List.of();
+        }
+
+        return entityManager.createQuery(
+                """
+                select c.name
+                from Company c
+                where lower(c.name) like lower(:namePart)
+                group by c.name
+                order by lower(c.name) asc, c.name asc
+                """,
+                String.class
+        ).setParameter("namePart", "%" + normalizedNamePart + "%")
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
     private List<Company> executeQuery(String jpql, Map<String, Object> parameters) {
         TypedQuery<Company> query = entityManager.createQuery(jpql, Company.class);
         parameters.forEach(query::setParameter);
