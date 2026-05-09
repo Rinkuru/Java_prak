@@ -26,7 +26,11 @@
 
             <label>
                 <span>Название компании</span>
-                <input id="company-name-input" th:field="*{name}" type="text">
+                <input autocomplete="off"
+                       id="company-name-input"
+                       th:attr="data-suggestions-url=@{/api/suggestions/companies}"
+                       th:field="*{name}"
+                       type="text">
                 <small class="field-error" th:errors="*{name}"></small>
             </label>
 

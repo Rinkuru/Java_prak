@@ -323,6 +323,52 @@ textarea {
     color: var(--text);
 }
 
+.autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.autocomplete-menu {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    max-height: 14rem;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel-strong);
+    box-shadow: 0 16px 36px rgba(74, 53, 37, 0.16);
+}
+
+.autocomplete-menu[hidden] {
+    display: none;
+}
+
+.autocomplete-option {
+    display: block;
+    width: 100%;
+    padding: 0.72rem 0.9rem;
+    border: 0;
+    border-bottom: 1px solid rgba(220, 205, 185, 0.55);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.autocomplete-option:last-child {
+    border-bottom: 0;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option.is-active {
+    background: rgba(239, 226, 210, 0.75);
+}
+
 .field-error {
     color: var(--danger);
     min-height: 1rem;

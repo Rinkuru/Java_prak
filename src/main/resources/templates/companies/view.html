@@ -55,7 +55,12 @@
         <form class="filters-grid filters-grid-compact" method="get" th:action="@{/companies/{id}(id=${company.id})}">
             <label>
                 <span>Должность</span>
-                <input id="vacancy-position-filter" name="position" th:value="${filterPosition}" type="text">
+                <input autocomplete="off"
+                       id="vacancy-position-filter"
+                       name="position"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='vacancy')}"
+                       th:value="${filterPosition}"
+                       type="text">
             </label>
 
             <label>

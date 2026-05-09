@@ -23,12 +23,22 @@
         <form class="filters-grid" method="get" th:action="@{/companies}">
             <label>
                 <span>Название</span>
-                <input id="company-name-filter" name="name" th:value="${filterName}" type="text">
+                <input autocomplete="off"
+                       id="company-name-filter"
+                       name="name"
+                       th:attr="data-suggestions-url=@{/api/suggestions/companies}"
+                       th:value="${filterName}"
+                       type="text">
             </label>
 
             <label>
                 <span>Должность вакансии</span>
-                <input id="company-position-filter" name="position" th:value="${filterPosition}" type="text">
+                <input autocomplete="off"
+                       id="company-position-filter"
+                       name="position"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='vacancy')}"
+                       th:value="${filterPosition}"
+                       type="text">
             </label>
 
             <label>
