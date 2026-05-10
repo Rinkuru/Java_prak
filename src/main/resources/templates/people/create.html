@@ -28,7 +28,11 @@
 
             <label>
                 <span>ФИО</span>
-                <input id="fullName-input" th:field="*{fullName}" type="text">
+                <input autocomplete="off"
+                       id="fullName-input"
+                       th:attr="data-suggestions-url=@{/api/suggestions/people}"
+                       th:field="*{fullName}"
+                       type="text">
                 <small class="field-error" th:errors="*{fullName}"></small>
             </label>
 
@@ -61,7 +65,11 @@
 
             <label>
                 <span>Желаемая должность</span>
-                <input id="desiredPosition-input" th:field="*{desiredPosition}" type="text">
+                <input autocomplete="off"
+                       id="desiredPosition-input"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='desired')}"
+                       th:field="*{desiredPosition}"
+                       type="text">
                 <small class="field-error" th:errors="*{desiredPosition}"></small>
             </label>
 

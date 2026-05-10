@@ -68,7 +68,12 @@
 
             <label>
                 <span>Должность из опыта</span>
-                <input id="filter-position" name="workedPosition" th:value="${filterWorkedPosition}" type="text">
+                <input autocomplete="off"
+                       id="filter-position"
+                       name="workedPosition"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='work')}"
+                       th:value="${filterWorkedPosition}"
+                       type="text">
             </label>
 
             <label>
