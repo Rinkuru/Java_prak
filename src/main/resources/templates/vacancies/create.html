@@ -33,7 +33,11 @@
 
             <label>
                 <span>Должность</span>
-                <input id="vacancy-position-input" th:field="*{position}" type="text">
+                <input autocomplete="off"
+                       id="vacancy-position-input"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='vacancy')}"
+                       th:field="*{position}"
+                       type="text">
                 <small class="field-error" th:errors="*{position}"></small>
             </label>
 
