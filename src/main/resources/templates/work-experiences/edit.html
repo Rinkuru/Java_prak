@@ -40,7 +40,11 @@
 
             <label>
                 <span>Должность</span>
-                <input id="work-position-input" th:field="*{position}" type="text">
+                <input autocomplete="off"
+                       id="work-position-input"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='work')}"
+                       th:field="*{position}"
+                       type="text">
                 <small class="field-error" th:errors="*{position}"></small>
             </label>
 
