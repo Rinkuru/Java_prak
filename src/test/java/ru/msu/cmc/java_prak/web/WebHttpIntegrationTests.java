@@ -4,6 +4,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testng.annotations.Test;
 import ru.msu.cmc.java_prak.model.Company;
@@ -182,5 +186,138 @@ public class WebHttpIntegrationTests extends AbstractWebTestSupport {
         assertEquals(response.statusCode(), 500);
         assertTrue(response.body().contains("Что-то пошло не так"));
         assertTrue(response.body().contains("/test/fail"));
+    }
+
+    @Test
+    public void companySuggestionsShouldSearchCaseInsensitivelyAndIgnoreShortQuery() throws Exception {
+        persistCompany("Alpha Tech", "IT");
+        persistCompany("Beta Labs", "IT");
+        persistCompany("Gamma Retail", "Retail");
+
+        assertEquals(getJsonStringList("/api/suggestions/companies?q=TECH"), List.of("Alpha Tech"));
+        assertEquals(getJsonStringList("/api/suggestions/companies?q=t"), List.of());
+        assertEquals(getJsonStringList("/api/suggestions/companies"), List.of());
+    }
+
+    @Test
+    public void peopleSuggestionsShouldReturnMatchingFullNames() throws Exception {
+        persistPerson("Ann Able", "Высшее", true, "Аналитик", "160000.00");
+        persistPerson("Anna Smith", "Высшее техническое", true, "Java-разработчик", "220000.00");
+        persistPerson("Boris Stone", "Высшее", false, null, null);
+
+        assertEquals(getJsonStringList("/api/suggestions/people?q=ann"), List.of("Ann Able", "Anna Smith"));
+    }
+
+    @Test
+    public void vacancyPositionSuggestionsShouldReturnDistinctLimitedValues() throws Exception {
+        Company company = persistCompany("Alpha Tech", "IT");
+        persistVacancy(company, "Java 09", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 01", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 01", "200000.00", true, "Высшее");
+        persistVacancy(company, "Java 02", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 03", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 04", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 05", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 06", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 07", "190000.00", true, "Высшее");
+        persistVacancy(company, "Java 08", "190000.00", true, "Высшее");
+
+        List<String> suggestions = getJsonStringList("/api/suggestions/positions?source=vacancy&q=java");
+
+        assertEquals(suggestions, List.of(
+                "Java 01",
+                "Java 02",
+                "Java 03",
+                "Java 04",
+                "Java 05",
+                "Java 06",
+                "Java 07",
+                "Java 08"
+        ));
+        assertEquals(new HashSet<>(suggestions).size(), suggestions.size());
+    }
+
+    @Test
+    public void positionSuggestionsShouldUseSelectedSource() throws Exception {
+        Company company = persistCompany("Alpha Tech", "IT");
+        Person person = persistPerson(
+                "Daria Lane",
+                "Высшее",
+                true,
+                "QA Analyst",
+                "170000.00"
+        );
+        persistVacancy(company, "QA Lead", "230000.00", true, "Высшее");
+        persistWorkExperience(
+                person,
+                company,
+                "QA Engineer",
+                "150000.00",
+                LocalDate.of(2021, 1, 1),
+                LocalDate.of(2023, 1, 1)
+        );
+
+        assertEquals(getJsonStringList("/api/suggestions/positions?source=vacancy&q=qa"), List.of("QA Lead"));
+        assertEquals(getJsonStringList("/api/suggestions/positions?source=work&q=qa"), List.of("QA Engineer"));
+        assertEquals(getJsonStringList("/api/suggestions/positions?source=desired&q=qa"), List.of("QA Analyst"));
+    }
+
+    @Test
+    public void positionSuggestionsShouldRejectUnknownSource() throws Exception {
+        HttpResponse<String> response = getPage("/api/suggestions/positions?source=unknown&q=java");
+
+        assertEquals(response.statusCode(), 400);
+    }
+
+    private List<String> getJsonStringList(String path) throws Exception {
+        HttpResponse<String> response = getPage(path);
+
+        assertEquals(response.statusCode(), 200);
+        return parseJsonStringList(response.body());
+    }
+
+    private List<String> parseJsonStringList(String body) {
+        String trimmedBody = body.trim();
+        assertTrue(trimmedBody.startsWith("["));
+        assertTrue(trimmedBody.endsWith("]"));
+
+        if ("[]".equals(trimmedBody)) {
+            return List.of();
+        }
+
+        List<String> values = new ArrayList<>();
+        StringBuilder currentValue = new StringBuilder();
+        boolean insideString = false;
+        boolean escaping = false;
+
+        for (int i = 1; i < trimmedBody.length() - 1; i++) {
+            char currentChar = trimmedBody.charAt(i);
+
+            if (escaping) {
+                currentValue.append(currentChar);
+                escaping = false;
+                continue;
+            }
+
+            if (currentChar == '\\') {
+                escaping = true;
+                continue;
+            }
+
+            if (currentChar == '"') {
+                if (insideString) {
+                    values.add(currentValue.toString());
+                    currentValue.setLength(0);
+                }
+                insideString = !insideString;
+                continue;
+            }
+
+            if (insideString) {
+                currentValue.append(currentChar);
+            }
+        }
+
+        return values;
     }
 }
