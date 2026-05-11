@@ -263,6 +263,61 @@ public class WebHttpIntegrationTests extends AbstractWebTestSupport {
     }
 
     @Test
+    public void candidatePositionSuggestionsShouldMergeDesiredAndWorkPositionsOnly() throws Exception {
+        Company company = persistCompany("Candidate Source Test", "IT");
+        Person person = persistPerson(
+                "Elena Candidate",
+                "Высшее",
+                true,
+                "Candidate 02",
+                "170000.00"
+        );
+        persistPerson(
+                "Maria Candidate",
+                "Высшее",
+                true,
+                "Candidate 01",
+                "180000.00"
+        );
+        persistPerson(
+                "Olga Candidate",
+                "Высшее",
+                true,
+                "Candidate 01",
+                "190000.00"
+        );
+        for (int i = 4; i <= 9; i++) {
+            persistPerson(
+                    "Candidate Person " + i,
+                    "Высшее",
+                    true,
+                    "Candidate 0" + i,
+                    "180000.00"
+            );
+        }
+        persistWorkExperience(
+                person,
+                company,
+                "Candidate 03",
+                "150000.00",
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2022, 1, 1)
+        );
+        persistVacancy(company, "Candidate 00", "230000.00", true, "Высшее");
+
+        assertEquals(getJsonStringList("/api/suggestions/positions?source=candidate&q=candidate"), List.of(
+                "Candidate 01",
+                "Candidate 02",
+                "Candidate 03",
+                "Candidate 04",
+                "Candidate 05",
+                "Candidate 06",
+                "Candidate 07",
+                "Candidate 08"
+        ));
+    }
+
+    @Test
     public void positionSuggestionsShouldRejectUnknownSource() throws Exception {
         HttpResponse<String> response = getPage("/api/suggestions/positions?source=unknown&q=java");
 

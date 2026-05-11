@@ -43,7 +43,7 @@
                 <span>Должность</span>
                 <input autocomplete="off"
                        id="work-position-input"
-                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='work')}"
+                       th:attr="data-suggestions-url=@{/api/suggestions/positions(source='candidate')}"
                        th:field="*{position}"
                        type="text">
                 <small class="field-error" th:errors="*{position}"></small>

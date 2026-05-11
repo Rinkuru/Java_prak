@@ -34,4 +34,25 @@ public class AutocompleteSystemTests extends AbstractSeleniumSystemTest {
 
         assertEquals(element("company-name-filter").getAttribute("value"), "Alpha Tech");
     }
+
+    @Test
+    public void peopleWorkedPositionFilterShouldUseCandidatePositionSuggestions() {
+        persistPerson(
+                "Pavel Product",
+                "Высшее",
+                true,
+                "Product Owner",
+                "190000.00"
+        );
+
+        openPeopleListPage();
+        clearAndType("filter-position", "prod");
+
+        WebElement option = new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.visibilityOfElementLocated(
+                        By.cssSelector("#filter-position-suggestions .autocomplete-option")
+                ));
+
+        assertEquals(option.getText(), "Product Owner");
+    }
 }

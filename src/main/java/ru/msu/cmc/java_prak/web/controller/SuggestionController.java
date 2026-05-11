@@ -1,7 +1,9 @@
 package ru.msu.cmc.java_prak.web.controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.TreeSet;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,8 +74,23 @@ public class SuggestionController {
             case "vacancy" -> query == null ? List.of() : vacancyDao.findPositionSuggestions(query, SUGGESTION_LIMIT);
             case "work" -> query == null ? List.of() : workExperienceDao.findPositionSuggestions(query, SUGGESTION_LIMIT);
             case "desired" -> query == null ? List.of() : personDao.findDesiredPositionSuggestions(query, SUGGESTION_LIMIT);
+            case "candidate" -> query == null ? List.of() : candidatePositionSuggestions(query);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неизвестный источник подсказок.");
         };
+    }
+
+    private List<String> candidatePositionSuggestions(String query) {
+        Comparator<String> suggestionComparator = Comparator
+                .comparing((String value) -> value.toLowerCase(Locale.ROOT))
+                .thenComparing(Comparator.naturalOrder());
+        TreeSet<String> suggestions = new TreeSet<>(suggestionComparator);
+
+        suggestions.addAll(workExperienceDao.findPositionSuggestions(query, SUGGESTION_LIMIT));
+        suggestions.addAll(personDao.findDesiredPositionSuggestions(query, SUGGESTION_LIMIT));
+
+        return suggestions.stream()
+                .limit(SUGGESTION_LIMIT)
+                .toList();
     }
 
     private String normalizeQuery(String query) {
